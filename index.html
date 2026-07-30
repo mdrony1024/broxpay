@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Broxpay - Web3 Auto Exchange Wallet</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            gold: '#F0B90B', /* Premium Binance Gold */
+                            darkBg: '#0b0f19', /* Deep Web3 space background */
+                            cardBg: '#161c2a'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;950&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f19;
+        }
+        /* Hide scrollbars */
+        .scrollbar-none::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-none {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 dark:bg-slate-950 flex justify-center items-center min-h-screen m-0 p-0 transition-colors duration-300 select-none">
+
+    <!-- App Main Container (Transforms from a Mobile Frame on Desktop to full-width Dashboard) -->
+    <div class="w-full max-w-md md:max-w-5xl bg-white dark:bg-[#0f1624] h-[100dvh] md:h-[780px] flex flex-col justify-between relative shadow-2xl overflow-hidden md:rounded-[32px] md:border md:border-gray-100 dark:md:border-slate-800 transition-colors duration-300">
+        
+        <!-- Success Toast Notification -->
+        <div id="toast" class="absolute top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-5 py-2.5 rounded-2xl shadow-lg z-50 flex items-center space-x-2 text-xs font-bold transition-all duration-300 opacity-0 -translate-y-4 pointer-events-none border border-emerald-400/20">
+            <i class="fa-solid fa-circle-check text-sm text-white"></i>
+            <span id="toast-message">Converted successfully!</span>
+        </div>
+
+        <!-- Scrollable Content Area -->
+        <div class="overflow-y-auto flex-1 pb-24 md:pb-6 scrollbar-none">
+            
+            <!-- Header Section (Adapts for Mobile & Desktop headers) -->
+            <div class="flex items-center justify-between px-5 pt-6 pb-2.5 border-b border-gray-100/10 dark:border-slate-800/50">
+                <div class="flex items-center space-x-3">
+                    <div class="relative">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100" alt="Profile" class="w-11 h-11 rounded-full border-2 border-[#F0B90B] object-cover shadow-md">
+                        <span class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white dark:border-[#0f1624] rounded-full"></span>
+                    </div>
+                    <div>
+                        <h2 class="font-extrabold text-gray-900 dark:text-white text-xs tracking-wider flex items-center gap-1">
+                            MAC SAMUAL 
+                            <i class="fa-solid fa-circle-check text-blue-500 text-[10px]" title="Verified"></i>
+                        </h2>
+                        <!-- Interactive Balance Display (Defaults to USD as per instruction) -->
+                        <div id="balance-btn" class="inline-flex items-center bg-gray-100 dark:bg-slate-800 text-gray-750 dark:text-slate-300 px-3 py-1 rounded-full text-[10px] font-bold mt-1 shadow-2xs cursor-pointer select-none border border-gray-200/50 dark:border-slate-700/50 transition-all hover:scale-102">
+                            <i class="fa-solid fa-coins mr-1.5 text-amber-500"></i> $ 1,518.68
+                        </div>
+                    </div>
+                </div>
+                <!-- Controls Header (Search & Menu triggers) -->
+                <div class="flex items-center space-x-2">
+                    <div class="text-gray-600 dark:text-gray-300 text-sm cursor-pointer p-2 bg-gray-100 dark:bg-slate-800/80 hover:bg-gray-200 dark:hover:bg-slate-800 rounded-full transition-colors">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                    <div id="open-sidebar-btn" class="text-gray-600 dark:text-gray-300 text-sm cursor-pointer p-2 bg-gray-100 dark:bg-slate-800/80 hover:bg-gray-200 dark:hover:bg-slate-800 rounded-full transition-colors">
+                        <i class="fa-solid fa-bars"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Responsive Widescreen Split Layout Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-6 px-5 mt-4">
+                
+                <!-- LEFT PANEL (Occupies 7/12 grid space on desktop for Actions and Promos) -->
+                <div class="col-span-1 md:col-span-7 space-y-5">
+                    
+                    <!-- Auto-Exchange Active Status Banner -->
+                    <div class="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/20 rounded-2xl p-3.5 flex items-center justify-between">
+                        <div class="flex items-center space-x-2.5">
+                            <span class="text-base">⚡</span>
+                            <div>
+                                <span class="text-[9px] text-amber-500 dark:text-[#F0B90B] font-extrabold uppercase tracking-wider">Router Channel Online</span>
+                                <p class="text-[10px] text-gray-550 dark:text-slate-400 font-medium">Binance &harr; XRocket &harr; TrustWallet Active</p>
+                            </div>
+                        </div>
+                        <span class="text-[9px] bg-emerald-500/10 text-emerald-500 font-bold px-2.5 py-0.5 rounded-full border border-emerald-500/20 flex items-center gap-1">
+                            <span class="w-1 h-1 rounded-full bg-emerald-500 animate-ping"></span> Live
+                        </span>
+                    </div>
+
+                    <!-- Services Grid Layout -->
+                    <div>
+                        <h3 class="font-extrabold text-gray-800 dark:text-slate-400 text-[10px] tracking-wider uppercase mb-2.5">Quick Actions</h3>
+                        <div class="grid grid-cols-4 gap-3 bg-gray-55/40 dark:bg-slate-950/40 p-3.5 rounded-2xl border border-gray-100 dark:border-slate-800/85">
+                            <!-- Send Money -->
+                            <div class="flex flex-col items-center cursor-pointer group">
+                                <div class="w-12 h-12 bg-blue-50 dark:bg-blue-950/40 text-blue-500 dark:text-blue-400 rounded-2xl flex items-center justify-center text-sm mb-1.5 shadow-sm group-hover:scale-105 transition-transform border border-blue-100 dark:border-blue-900/30">
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                </div>
+                                <span class="text-[10px] text-gray-700 dark:text-gray-300 font-extrabold text-center leading-tight">Send</span>
+                            </div>
+                            <!-- Recharge -->
+                            <div class="flex flex-col items-center cursor-pointer group">
+                                <div class="w-12 h-12 bg-teal-50 dark:bg-teal-950/40 text-teal-500 dark:text-teal-400 rounded-2xl flex items-center justify-center text-sm mb-1.5 shadow-sm group-hover:scale-105 transition-transform border border-teal-100 dark:border-teal-900/30">
+                                    <i class="fa-solid fa-mobile-screen"></i>
+                                </div>
+                                <span class="text-[10px] text-gray-700 dark:text-gray-300 font-extrabold text-center leading-tight">Recharge</span>
+                            </div>
+                            <!-- Add Money -->
+                            <div class="flex flex-col items-center cursor-pointer group">
+                                <div class="w-12 h-12 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500 dark:text-emerald-400 rounded-2xl flex items-center justify-center text-sm mb-1.5 shadow-sm group-hover:scale-105 transition-transform border border-emerald-100 dark:border-emerald-900/30">
+                                    <i class="fa-solid fa-wallet"></i>
+                                </div>
+                                <span class="text-[10px] text-gray-700 dark:text-gray-300 font-extrabold text-center leading-tight">Add</span>
+                            </div>
+                            <!-- Exchange Trigger Button -->
+                            <div onclick="openExchangeModal()" class="flex flex-col items-center cursor-pointer group">
+                                <div class="w-12 h-12 bg-amber-50 dark:bg-amber-950/40 text-amber-500 dark:text-amber-400 rounded-2xl flex items-center justify-center text-sm mb-1.5 shadow-sm group-hover:scale-105 transition-transform border border-amber-100 dark:border-amber-900/30">
+                                    <i class="fa-solid fa-arrow-right-arrow-left"></i>
+                                </div>
+                                <span class="text-[10px] text-gray-700 dark:text-gray-300 font-extrabold text-center leading-tight">Exchange</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Promo & Campaigns Slider (Kept visually beautiful) -->
+                    <div>
+                        <h3 class="font-extrabold text-gray-800 dark:text-slate-400 text-[10px] tracking-wider uppercase mb-2.5">Promos & Deals</h3>
+                        <div class="overflow-x-auto flex space-x-4 snap-x snap-mandatory scrollbar-none cursor-grab" id="promo-carousel" style="scroll-behavior: smooth;">
+                            
+                            <!-- Slide 1 -->
+                            <div class="promo-slide w-full flex-shrink-0 snap-center bg-gradient-to-br from-[#12161F] via-[#1E232F] to-[#12161F] border border-slate-800 rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden shadow-md text-white h-[135px]">
+                                <div class="absolute -right-6 -top-6 w-24 h-24 bg-amber-500/10 rounded-full blur-xl"></div>
+                                <div class="flex justify-between items-start z-10">
+                                    <div>
+                                        <span class="bg-[#F0B90B]/10 border border-[#F0B90B]/30 text-[#F0B90B] text-[8px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider">Broxpay Router</span>
+                                        <h3 class="text-sm font-extrabold mt-1 tracking-wide leading-tight text-white">Binance ⇄ XRocket Channel</h3>
+                                    </div>
+                                    <i class="fa-solid fa-bolt text-lg text-[#F0B90B] animate-pulse"></i>
+                                </div>
+                                <div class="flex justify-between items-center z-10 mt-2">
+                                    <p class="text-[9px] text-slate-400">Zero fee routing with high-speed execution pools</p>
+                                    <button onclick="openExchangeModal()" class="bg-[#F0B90B] text-slate-950 text-[10px] font-black px-4 py-1.5 rounded-xl hover:bg-yellow-500 transition-colors shadow-sm">Swap Now</button>
+                                </div>
+                            </div>
+
+                            <!-- Slide 2 -->
+                            <div class="promo-slide w-full flex-shrink-0 snap-center bg-gradient-to-br from-emerald-600 via-teal-650 to-teal-700 border border-emerald-500/20 rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden shadow-md text-white h-[135px]">
+                                <div class="absolute -right-6 -top-6 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
+                                <div class="flex justify-between items-start z-10">
+                                    <div>
+                                        <span class="bg-white/20 text-[8px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider">TrustWallet Gift</span>
+                                        <h3 class="text-sm font-extrabold mt-1 tracking-wide leading-tight text-white">Claim Your 10% Crypto Bonus</h3>
+                                    </div>
+                                    <i class="fa-solid fa-gift text-lg text-yellow-200"></i>
+                                </div>
+                                <div class="flex justify-between items-center z-10 mt-2">
+                                    <p class="text-[9px] text-teal-100">Valid on all first-time Add Money inputs</p>
+                                    <button class="bg-white text-emerald-650 text-[10px] font-black px-4 py-1.5 rounded-xl hover:bg-teal-50 transition-colors shadow-sm">Claim</button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- RIGHT PANEL (Occupies 5/12 grid space on desktop, displays Market Trends side-by-side) -->
+                <div class="col-span-1 md:col-span-5 flex flex-col justify-between">
+                    
+                    <div>
+                        <div class="flex justify-between items-center mb-2.5">
+                            <h3 class="font-extrabold text-gray-800 dark:text-slate-300 text-[10px] tracking-wider uppercase">Market Trends</h3>
+                        </div>
+                        
+                        <!-- List of Cryptocurrencies -->
+                        <div class="space-y-3 bg-gray-50/50 dark:bg-slate-950/30 p-4 rounded-2xl border border-gray-100 dark:border-slate-800/80 shadow-2xs">
+                            
+                            <!-- USDT -->
+                            <div class="flex justify-between items-center p-1 rounded-xl transition-all hover:bg-white dark:hover:bg-slate-900/60">
+                                <div class="flex items-center space-x-3.5">
+                                    <div class="w-9 h-9 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500 rounded-full flex items-center justify-center border border-emerald-100 dark:border-emerald-900/30 shadow-xs relative">
+                                        <i class="fa-solid fa-dollar-sign text-xs"></i>
+                                        <span class="absolute top-0 right-0 w-2 h-2 bg-emerald-500 rounded-full border-2 border-white dark:border-[#0f1624]"></span>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-900 dark:text-white text-xs">USDT</h4>
+                                        <span class="text-[9px] text-gray-400 dark:text-slate-550 block font-semibold uppercase">Tether US</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <svg class="w-14 h-7 filter drop-shadow-[0_2px_4px_rgba(16,185,129,0.25)]" viewBox="0 0 50 20">
+                                        <path d="M0 15 Q12 10 25 12 T50 5" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" />
+                                    </svg>
+                                </div>
+                                <div class="text-right">
+                                    <span id="ticker-USDT" class="text-xs font-black text-gray-900 dark:text-white">$1.00</span>
+                                    <span id="change-USDT" class="text-[10px] font-bold text-emerald-500 block mt-0.5">+0.12%</span>
+                                </div>
+                            </div>
+
+                            <!-- BTC -->
+                            <div class="flex justify-between items-center p-1 rounded-xl transition-all hover:bg-white dark:hover:bg-slate-900/60">
+                                <div class="flex items-center space-x-3.5">
+                                    <div class="w-9 h-9 bg-amber-50 dark:bg-amber-950/40 text-[#F0B90B] rounded-full flex items-center justify-center border border-amber-100 dark:border-amber-900/30 shadow-xs relative">
+                                        <i class="fa-brands fa-bitcoin text-xs"></i>
+                                        <span class="absolute top-0 right-0 w-2 h-2 bg-[#F0B90B] rounded-full border-2 border-white dark:border-[#0f1624]"></span>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-900 dark:text-white text-xs">BTC</h4>
+                                        <span class="text-[9px] text-gray-400 dark:text-slate-550 block font-semibold uppercase">Bitcoin</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <svg class="w-14 h-7 filter drop-shadow-[0_2px_4px_rgba(16,185,129,0.25)]" viewBox="0 0 50 20">
+                                        <path d="M0 18 Q12 12 25 5 T50 2" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" />
+                                    </svg>
+                                </div>
+                                <div class="text-right">
+                                    <span id="ticker-BTC" class="text-xs font-black text-gray-900 dark:text-white">$92,450</span>
+                                    <span id="change-BTC" class="text-[10px] font-bold text-emerald-500 block mt-0.5">+1.45%</span>
+                                </div>
+                            </div>
+
+                            <!-- ETH -->
+                            <div class="flex justify-between items-center p-1 rounded-xl transition-all hover:bg-white dark:hover:bg-slate-900/60">
+                                <div class="flex items-center space-x-3.5">
+                                    <div class="w-9 h-9 bg-[#1E232F] text-indigo-400 rounded-full flex items-center justify-center border border-slate-750 shadow-xs relative">
+                                        <i class="fa-brands fa-ethereum text-xs"></i>
+                                        <span class="absolute top-0 right-0 w-2 h-2 bg-rose-500 rounded-full border-2 border-white dark:border-[#0f1624]"></span>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-900 dark:text-white text-xs">ETH</h4>
+                                        <span class="text-[9px] text-gray-400 dark:text-slate-550 block font-semibold uppercase">Ethereum</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <svg class="w-14 h-7 filter drop-shadow-[0_2px_4px_rgba(244,63,94,0.3)]" viewBox="0 0 50 20">
+                                        <path d="M0 4 Q12 16 25 10 T50 18" fill="none" stroke="#f43f5e" stroke-width="2" stroke-linecap="round" />
+                                    </svg>
+                                </div>
+                                <div class="text-right">
+                                    <span id="ticker-ETH" class="text-xs font-black text-gray-900 dark:text-white">$3,120</span>
+                                    <span id="change-ETH" class="text-[10px] font-bold text-rose-500 block mt-0.5">-0.52%</span>
+                                </div>
+                            </div>
+
+                            <!-- TON -->
+                            <div class="flex justify-between items-center p-1 rounded-xl transition-all hover:bg-white dark:hover:bg-slate-900/60">
+                                <div class="flex items-center space-x-3.5">
+                                    <div class="w-9 h-9 bg-blue-50 dark:bg-blue-950/40 text-blue-500 rounded-full flex items-center justify-center border border-blue-100 dark:border-blue-900/30 shadow-xs relative">
+                                        <i class="fa-solid fa-gem text-xs"></i>
+                                        <span class="absolute top-0 right-0 w-2 h-2 bg-rose-500 rounded-full border-2 border-white dark:border-[#0f1624]"></span>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-900 dark:text-white text-xs">TON</h4>
+                                        <span class="text-[9px] text-gray-400 dark:text-slate-550 block font-semibold uppercase">Toncoin</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <svg class="w-14 h-7 filter drop-shadow-[0_2px_4px_rgba(244,63,94,0.3)]" viewBox="0 0 50 20">
+                                        <path d="M0 15 Q12 5 25 9 T50 14" fill="none" stroke="#f43f5e" stroke-width="2" stroke-linecap="round" />
+                                    </svg>
+                                </div>
+                                <div class="text-right">
+                                    <span id="ticker-TON" class="text-xs font-black text-gray-900 dark:text-white">$7.24</span>
+                                    <span id="change-TON" class="text-[10px] font-bold text-rose-500 block mt-0.5">-0.12%</span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Fixed Bottom Navigation Bar (Hidden on Desktop using md:hidden) -->
+        <div class="absolute bottom-0 left-0 right-0 md:hidden bg-white/95 dark:bg-slate-950/95 backdrop-blur-md border-t border-gray-100 dark:border-slate-850 px-8 py-3.5 pb-4 flex justify-between items-center z-20 shadow-lg transition-colors">
+            <!-- Home -->
+            <div class="flex flex-col items-center text-amber-500 dark:text-[#F0B90B] cursor-pointer">
+                <i class="fa-solid fa-house text-lg"></i>
+                <span class="text-[10px] font-extrabold mt-0.5">Home</span>
+            </div>
+            
+            <!-- Floating QR Scanner Button -->
+            <div class="absolute left-1/2 -top-5 transform -translate-x-1/2">
+                <div class="w-12 h-12 bg-white dark:bg-[#0f1624] rounded-full p-1 shadow-md border border-gray-100 dark:border-slate-800 flex items-center justify-center cursor-pointer">
+                    <div class="w-full h-full bg-amber-50 dark:bg-slate-800 text-[#F0B90B] rounded-full flex items-center justify-center text-base shadow-inner">
+                        <i class="fa-solid fa-qrcode"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History -->
+            <div class="flex flex-col items-center text-gray-400 dark:text-slate-500 cursor-pointer hover:text-gray-600 dark:hover:text-slate-300">
+                <i class="fa-solid fa-file-lines text-lg"></i>
+                <span class="text-[10px] font-extrabold mt-0.5">History</span>
+            </div>
+        </div>
+
+        <!-- INTERACTIVE DRAWER SIDEBAR -->
+        <div id="sidebar-overlay" class="absolute inset-0 bg-black/60 z-30 hidden opacity-0 transition-opacity duration-300 md:rounded-[32px]"></div>
+        
+        <div id="sidebar-menu" class="absolute top-0 right-0 h-full w-72 bg-white dark:bg-[#0f1624] z-40 transform translate-x-full transition-transform duration-300 ease-in-out shadow-2xl border-l border-gray-100 dark:border-slate-800/80 flex flex-col justify-between">
+            <div class="p-5">
+                <div class="flex justify-between items-center mb-6">
+                    <span class="text-amber-500 dark:text-[#F0B90B] font-extrabold tracking-widest text-xs uppercase">Broxpay Hub</span>
+                    <button id="close-sidebar-btn" class="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 p-1">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+
+                <div class="bg-gray-50 dark:bg-slate-950 p-4 rounded-xl border border-gray-100 dark:border-slate-850 mb-5">
+                    <div class="flex items-center space-x-3">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100" class="w-10 h-10 rounded-full object-cover">
+                        <div>
+                            <h4 class="text-xs font-bold text-gray-800 dark:text-white">MAC SAMUAL</h4>
+                            <span class="text-[8px] bg-emerald-500/10 text-emerald-500 font-bold px-1.5 py-0.5 rounded">Verified Tier-2</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <h5 class="text-[9px] font-bold text-gray-400 tracking-wider uppercase">System Config</h5>
+                    
+                    <!-- Dark/Light Theme Switcher -->
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-circle-half-stroke text-slate-500 dark:text-slate-400 text-xs"></i>
+                            <span class="text-xs font-bold text-gray-700 dark:text-slate-300">Dark Mode</span>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="theme-toggle" class="sr-only peer">
+                            <div class="w-9 h-5 bg-gray-200 dark:bg-slate-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+                        </label>
+                    </div>
+
+                    <!-- Global Currency Selector Launcher -->
+                    <div onclick="openCurrencyModal()" class="flex justify-between items-center p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-950 cursor-pointer border border-transparent hover:border-gray-100 dark:hover:border-slate-800 transition-all">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-earth-americas text-slate-500 dark:text-slate-400 text-xs"></i>
+                            <span class="text-xs font-bold text-gray-700 dark:text-slate-300">Currency</span>
+                        </div>
+                        <span id="current-currency-display-sidebar" class="text-[10px] font-extrabold text-amber-500 dark:text-[#F0B90B] bg-amber-500/10 px-2 py-0.5 rounded-full flex items-center gap-1">
+                            🇺🇸 USD ($)
+                        </span>
+                    </div>
+
+                    <!-- Biometric Lock -->
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-fingerprint text-slate-500 dark:text-slate-400 text-xs"></i>
+                            <span class="text-xs font-bold text-gray-700 dark:text-slate-300">Biometric Lock</span>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" checked class="sr-only peer">
+                            <div class="w-9 h-5 bg-gray-200 dark:bg-slate-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="space-y-3.5 mt-6">
+                    <h5 class="text-[9px] font-bold text-gray-400 tracking-wider uppercase">Support & Info</h5>
+                    <div class="flex items-center space-x-2.5 text-xs font-bold text-gray-700 dark:text-slate-300 cursor-pointer hover:text-amber-500 dark:hover:text-[#F0B90B]">
+                        <i class="fa-solid fa-circle-question text-slate-400 w-4"></i>
+                        <span>Help Centre</span>
+                    </div>
+                </div>
+            </div>
+            <div class="p-5 border-t border-gray-100 dark:border-slate-800 text-center">
+                <span class="text-[9px] text-gray-400 font-semibold uppercase">Broxpay Version 1.2.0</span>
+            </div>
+        </div>
+
+        <!-- SEARCHABLE CURRENCY SELECTOR BOTTOM SHEET -->
+        <div id="currency-modal" class="absolute inset-0 bg-black/60 z-50 hidden flex items-end justify-center transition-opacity duration-300 opacity-0 md:rounded-[32px]">
+            <div class="bg-white dark:bg-[#0f1624] w-full h-[85%] rounded-t-[32px] p-5 shadow-2xl transform translate-y-full transition-transform duration-300 flex flex-col">
+                <div class="flex justify-between items-center mb-4">
+                    <h4 class="text-xs font-extrabold text-gray-900 dark:text-white uppercase tracking-wider">Select Currency</h4>
+                    <button id="close-currency-modal" class="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 p-1">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+                
+                <div class="relative mb-4">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-gray-400">
+                        <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                    </span>
+                    <input id="currency-search-input" type="text" placeholder="Search world currencies (e.g. USD, Rupee, Taka...)" class="w-full bg-gray-50 dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl pl-9 pr-4 py-2.5 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[#F0B90B] dark:text-white transition-all">
+                </div>
+                
+                <div id="currency-list-container" class="flex-1 overflow-y-auto space-y-1.5 scrollbar-none pr-0.5">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- PRESET EXCHANGE MODAL SHEET -->
+        <div id="exchange-modal" class="absolute inset-0 bg-black/60 z-40 hidden flex items-end justify-center transition-opacity duration-300 opacity-0 md:rounded-[32px]">
+            <div class="bg-white dark:bg-[#0f1624] w-full h-[80%] rounded-t-[32px] p-5 shadow-2xl transform translate-y-full transition-transform duration-300 flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-center mb-5">
+                        <h4 class="text-xs font-extrabold text-gray-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-shuffle text-amber-500 animate-spin-slow"></i> Broxpay Auto-Router
+                        </h4>
+                        <button onclick="closeExchangeModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 p-1">
+                            <i class="fa-solid fa-xmark text-lg"></i>
+                        </button>
+                    </div>
+
+                    <form class="space-y-4">
+                        <div class="bg-gray-50 dark:bg-slate-900 p-3.5 rounded-xl border border-gray-100 dark:border-slate-800 flex justify-between items-center">
+                            <div>
+                                <label class="block text-[8px] font-bold text-gray-400 dark:text-slate-500 uppercase">From Platform</label>
+                                <select id="swap-from" class="bg-transparent text-xs font-bold text-gray-800 dark:text-slate-200 focus:outline-none cursor-pointer mt-0.5">
+                                    <option value="bsc-usdt" class="dark:bg-slate-900">Binance - USDT (BEP20)</option>
+                                    <option value="trust-btc" class="dark:bg-slate-900">TrustWallet - BTC</option>
+                                    <option value="xrocket-ton" class="dark:bg-slate-900">XRocket - TON</option>
+                                </select>
+                            </div>
+                            <input id="swap-amount-from" type="number" value="100" class="w-24 bg-transparent text-right text-gray-800 dark:text-slate-200 font-extrabold text-sm focus:outline-none" placeholder="0.00">
+                        </div>
+
+                        <div class="flex justify-center -my-3.5">
+                            <div class="w-8 h-8 bg-amber-500 text-slate-950 rounded-full flex items-center justify-center text-xs shadow-md border-2 border-white dark:border-slate-950 z-10">
+                                <i class="fa-solid fa-arrow-down-long"></i>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 dark:bg-slate-900 p-3.5 rounded-xl border border-gray-100 dark:border-slate-800 flex justify-between items-center">
+                            <div>
+                                <label class="block text-[8px] font-bold text-gray-400 dark:text-slate-500 uppercase">To Platform</label>
+                                <select id="swap-to" class="bg-transparent text-xs font-bold text-gray-800 dark:text-slate-200 focus:outline-none cursor-pointer mt-0.5">
+                                    <option value="xrocket-ton" class="dark:bg-slate-900">XRocket - TON</option>
+                                    <option value="trust-usdt" class="dark:bg-slate-900">TrustWallet - USDT (TRC20)</option>
+                                    <option value="bsc-usdt" class="dark:bg-slate-900">Binance - USDT</option>
+                                </select>
+                            </div>
+                            <span id="swap-amount-to" class="text-right text-amber-600 dark:text-amber-400 font-extrabold text-sm">13.81 TON</span>
+                        </div>
+                    </form>
+                </div>
+
+                <button type="button" onclick="runSwapSimulation()" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-black py-3.5 rounded-xl text-xs transition-all shadow-md mt-4 uppercase tracking-wider">
+                    Confirm Auto Exchange
+                </button>
+            </div>
+        </div>
+
+        <!-- Simulated Crypto Transaction Processing Screen (Overlay) -->
+        <div id="tx-modal" class="absolute inset-0 bg-black/70 z-50 hidden flex flex-col justify-center items-center p-6 md:rounded-[32px]">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 w-full max-w-xs text-center space-y-4 shadow-2xl transition-colors border border-slate-800/80">
+                <div class="relative w-16 h-16 mx-auto flex items-center justify-center">
+                    <div class="absolute inset-0 rounded-full border-4 border-gray-100 dark:border-slate-800"></div>
+                    <div id="tx-spinner" class="absolute inset-0 rounded-full border-4 border-amber-500 border-t-transparent animate-spin"></div>
+                    <i id="tx-icon" class="fa-solid fa-arrow-right-arrow-left text-xl text-amber-500 animate-pulse"></i>
+                </div>
+                <div>
+                    <h4 id="tx-title" class="text-sm font-bold text-gray-800 dark:text-white">Connecting Broxpay Pools</h4>
+                    <p id="tx-desc" class="text-[11px] text-gray-450 dark:text-slate-400 mt-1">Processing exchange orders (1/3)...</p>
+                </div>
+                <button onclick="hideTxModal()" id="tx-btn" class="hidden w-full bg-amber-500 text-slate-950 font-extrabold py-2 rounded-xl text-xs hover:bg-amber-600 transition-colors">
+                    Done
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Script Block for All Upgraded Dynamic Elements -->
+    <script>
+        // Global App State (Updated default currency to USD)
+        let currentCurrency = 'USD'; 
+        let rawUsdBalance = 1518.68; // Base USD Asset Value
+
+        // Extensive Set of 150+ Global Fiat, Metal & Cryptocurrency Assets (Parsed completely without skip)
+        const currencies = [
+            { code: 'USD', name: 'US Dollar', symbol: '$', rate: 1.0 },
+            { code: 'AED', name: 'UAE Dirham', symbol: 'د.إ', rate: 3.67 },
+            { code: 'AFN', name: 'Afghani', symbol: '؋', rate: 70.50 },
+            { code: 'ALL', name: 'Lek', symbol: 'L', rate: 93.20 },
+            { code: 'AMD', name: 'Armenian Dram', symbol: '֏', rate: 388.00 },
+            { code: 'ANG', name: 'Netherlands Antillean Guilder', symbol: 'ƒ', rate: 1.80 },
+            { code: 'AOA', name: 'Kwanza', symbol: 'Kz', rate: 843.00 },
+            { code: 'ARS', name: 'Argentine Peso', symbol: '$', rate: 900.00 },
+            { code: 'AUD', name: 'Australian Dollar', symbol: '$', rate: 1.51 },
+            { code: 'AWG', name: 'Aruban Florin', symbol: 'ƒ', rate: 1.80 },
+            { code: 'AZN', name: 'Azerbaijan Manat', symbol: '₼', rate: 1.70 },
+            { code: 'BAM', name: 'Convertible Mark', symbol: 'KM', rate: 1.80 },
+            { code: 'BBD', name: 'Barbados Dollar', symbol: '$', rate: 2.00 },
+            { code: 'BDT', name: 'Taka', symbol: '৳', rate: 121.50 },
+            { code: 'BGN', name: 'Bulgarian Lev', symbol: 'лв', rate: 1.80 },
+            { code: 'BHD', name: 'Bahraini Dinar', symbol: '.د.ব', rate: 0.38 },
+            { code: 'BIF', name: 'Burundi Franc', symbol: 'FBu', rate: 2850.00 },
+            { code: 'BMD', name: 'Bermudian Dollar', symbol: '$', rate: 1.00 },
+            { code: 'BND', name: 'Brunei Dollar', symbol: '$', rate: 1.35 },
+            { code: 'BOB', name: 'Boliviano', symbol: '$b', rate: 6.90 },
+            { code: 'BRL', name: 'Brazilian Real', symbol: 'R$', rate: 5.15 },
+            { code: 'BSD', name: 'Bahamian Dollar', symbol: '$', rate: 1.00 },
+            { code: 'BTN', name: 'Ngultrum', symbol: 'Nu.', rate: 83.50 },
+            { code: 'BWP', name: 'Pula', symbol: 'P', rate: 13.60 },
+            { code: 'BYN', name: 'Belarusian Ruble', symbol: 'Br', rate: 3.27 },
+            { code: 'BZD', name: 'Belize Dollar', symbol: 'BZ$', rate: 2.00 },
+            { code: 'CAD', name: 'Canadian Dollar', symbol: '$', rate: 1.37 },
+            { code: 'CDF', name: 'Congolese Franc', symbol: 'FC', rate: 2800.00 },
+            { code: 'CHF', name: 'Swiss Franc', symbol: 'CHF', rate: 0.90 },
+            { code: 'CLP', name: 'Chilean Peso', symbol: '$', rate: 920.00 },
+            { code: 'CNY', name: 'Yuan Renminbi', symbol: '¥', rate: 7.25 },
+            { code: 'COP', name: 'Colombian Peso', symbol: '$', rate: 3950.00 },
+            { code: 'CRC', name: 'Costa Rican Colon', symbol: '₡', rate: 520.00 },
+            { code: 'CUP', name: 'Cuban Peso', symbol: '₱', rate: 24.00 },
+            { code: 'CVE', name: 'Cabo Verde Escudo', symbol: '$', rate: 102.00 },
+            { code: 'CZK', name: 'Czech Koruna', symbol: 'Kč', rate: 22.80 },
+            { code: 'DJF', name: 'Djibouti Franc', symbol: 'Fdj', rate: 178.00 },
+            { code: 'DKK', name: 'Danish Krone', symbol: 'kr', rate: 6.95 },
+            { code: 'DOP', name: 'Dominican Peso', symbol: 'RD$', rate: 58.50 },
+            { code: 'DZD', name: 'Algerian Dinar', symbol: 'دজ', rate: 134.00 },
+            { code: 'EGP', name: 'Egyptian Pound', symbol: '£', rate: 47.90 },
+            { code: 'ERN', name: 'Nakfa', symbol: 'Nfk', rate: 15.00 },
+            { code: 'ETB', name: 'Ethiopian Birr', symbol: 'Br', rate: 57.00 },
+            { code: 'EUR', name: 'Euro', symbol: '€', rate: 0.92 },
+            { code: 'FJD', name: 'Fiji Dollar', symbol: '$', rate: 2.24 },
+            { code: 'FKP', name: 'Falkland Islands Pound', symbol: '£', rate: 0.78 },
+            { code: 'GBP', name: 'Pound Sterling', symbol: '£', rate: 0.78 },
+            { code: 'GEL', name: 'Lari', symbol: '₾', rate: 2.70 },
+            { code: 'GHS', name: 'Ghana Cedi', symbol: '₵', rate: 14.50 },
+            { code: 'GIP', name: 'Gibraltar Pound', symbol: '£', rate: 0.78 },
+            { code: 'GMD', name: 'Dalasi', symbol: 'D', rate: 68.00 },
+            { code: 'GNF', name: 'Guinean Franc', symbol: 'FG', rate: 8600.00 },
+            { code: 'GTQ', name: 'Quetzal', symbol: 'Q', rate: 7.75 },
+            { code: 'GYD', name: 'Guyana Dollar', symbol: '$', rate: 209.00 },
+            { code: 'HKD', name: 'Hong Kong Dollar', symbol: '$', rate: 7.81 },
+            { code: 'HNL', name: 'Lempira', symbol: 'L', rate: 24.70 },
+            { code: 'HTG', name: 'Gourde', symbol: 'G', rate: 132.00 },
+            { code: 'HUF', name: 'Forint', symbol: 'Ft', rate: 360.00 },
+            { code: 'IDR', name: 'Rupiah', symbol: 'Rp', rate: 16200.00 },
+            { code: 'ILS', name: 'New Israeli Sheqel', symbol: '₪', rate: 3.72 },
+            { code: 'INR', name: 'Indian Rupee', symbol: '₹', rate: 83.50 },
+            { code: 'IQD', name: 'Iraqi Dinar', symbol: 'ع.দ', rate: 1310.00 },
+            { code: 'IRR', name: 'Iranian Rial', symbol: '﷼', rate: 42000.00 },
+            { code: 'ISK', name: 'Iceland Krona', symbol: 'kr', rate: 138.00 },
+            { code: 'JMD', name: 'Jamaican Dollar', symbol: 'J$', rate: 155.00 },
+            { code: 'JOD', name: 'Jordanian Dinar', symbol: 'د.ا', rate: 0.71 },
+            { code: 'JPY', name: 'Yen', symbol: '¥', rate: 156.20 },
+            { code: 'KES', name: 'Kenyan Shilling', symbol: 'KSh', rate: 131.00 },
+            { code: 'KGS', name: 'Som', symbol: 'лв', rate: 88.00 },
+            { code: 'KHR', name: 'Riel', symbol: '៛', rate: 4100.00 },
+            { code: 'KMF', name: 'Comorian Franc', symbol: 'CF', rate: 450.00 },
+            { code: 'KPW', name: 'North Korean Won', symbol: '₩', rate: 900.00 },
+            { code: 'KRW', name: 'Won', symbol: '₩', rate: 1370.00 },
+            { code: 'KWD', name: 'Kuwaiti Dinar', symbol: 'د.ক', rate: 0.31 },
+            { code: 'KYD', name: 'Cayman Islands Dollar', symbol: '$', rate: 0.83 },
+            { code: 'KZT', name: 'Tenge', symbol: '₸', rate: 445.00 },
+            { code: 'LAK', name: 'Lao Kip', symbol: '₭', rate: 21000.00 },
+            { code: 'LBP', name: 'Lebanese Pound', symbol: '£', rate: 89500.00 },
+            { code: 'LKR', name: 'Sri Lanka Rupee', symbol: '₨', rate: 302.00 },
+            { code: 'LRD', name: 'Liberian Dollar', symbol: '$', rate: 194.00 },
+            { code: 'LSL', name: 'Loti', symbol: 'L', rate: 18.50 },
+            { code: 'LYD', name: 'Libyan Dinar', symbol: 'LD', rate: 4.85 },
+            { code: 'MAD', name: 'Moroccan Dirham', symbol: 'د.ম.', rate: 10.05 },
+            { code: 'MDL', name: 'Moldovan Leu', symbol: 'lei', rate: 17.70 },
+            { code: 'MGA', name: 'Malagasy Ariary', symbol: 'Ar', rate: 4400.00 },
+            { code: 'MKD', name: 'Denar', symbol: 'ден', rate: 56.50 },
+            { code: 'MMK', name: 'Kyat', symbol: 'K', rate: 2100.00 },
+            { code: 'MNT', name: 'Tugrik', symbol: '₮', rate: 3450.00 },
+            { code: 'MOP', name: 'Pataca', symbol: 'MOP$', rate: 8.05 },
+            { code: 'MRU', name: 'Ouguiya', symbol: 'UM', rate: 39.70 },
+            { code: 'MUR', name: 'Mauritius Rupee', symbol: '₨', rate: 46.20 },
+            { code: 'MVR', name: 'Rufiyaa', symbol: 'Rf', rate: 15.40 },
+            { code: 'MWK', name: 'Malawi Kwacha', symbol: 'MK', rate: 1730.00 },
+            { code: 'MXN', name: 'Mexican Peso', symbol: '$', rate: 18.25 },
+            { code: 'MYR', name: 'Malaysian Ringgit', symbol: 'RM', rate: 4.71 },
+            { code: 'MZN', name: 'Mozambique Metical', symbol: 'MT', rate: 63.90 },
+            { code: 'NAD', name: 'Namibia Dollar', symbol: '$', rate: 18.50 },
+            { code: 'NGN', name: 'Naira', symbol: '₦', rate: 1480.00 },
+            { code: 'NIO', name: 'Cordoba Oro', symbol: 'C$', rate: 36.80 },
+            { code: 'NOK', name: 'Norwegian Krone', symbol: 'kr', rate: 10.80 },
+            { code: 'NPR', name: 'Nepalese Rupee', symbol: '₨', rate: 133.50 },
+            { code: 'NZD', name: 'New Zealand Dollar', symbol: '$', rate: 1.63 },
+            { code: 'OMR', name: 'Rial Omani', symbol: '﷼', rate: 0.38 },
+            { code: 'PAB', name: 'Balboa', symbol: 'B/.', rate: 1.00 },
+            { code: 'PEN', name: 'Sol', symbol: 'S/.', rate: 3.73 },
+            { code: 'PGK', name: 'Kina', symbol: 'K', rate: 3.90 },
+            { code: 'PHP', name: 'Philippine Peso', symbol: '₱', rate: 58.20 },
+            { code: 'PKR', name: 'Pakistan Rupee', symbol: '₨', rate: 278.00 },
+            { code: 'PLN', name: 'Zloty', symbol: 'zł', rate: 4.01 },
+            { code: 'PYG', name: 'Guarani', symbol: 'Gs', rate: 7500.00 },
+            { code: 'QAR', name: 'Qatari Rial', symbol: '﷼', rate: 3.64 },
+            { code: 'RON', name: 'Romanian Leu', symbol: 'lei', rate: 4.58 },
+            { code: 'RSD', name: 'Serbian Dinar', symbol: 'дин', rate: 108.00 },
+            { code: 'RUB', name: 'Russian Ruble', symbol: '₽', rate: 90.10 },
+            { code: 'RWF', name: 'Rwanda Franc', symbol: 'RF', rate: 1310.00 },
+            { code: 'SAR', name: 'Saudi Riyal', symbol: '﷼', rate: 3.75 },
+            { code: 'SBD', name: 'Solomon Islands Dollar', symbol: '$', rate: 8.50 },
+            { code: 'SCR', name: 'Seychelles Rupee', symbol: '₨', rate: 13.50 },
+            { code: 'SDG', name: 'Sudanese Pound', symbol: 'ج.স.', rate: 601.00 },
+            { code: 'SEK', name: 'Swedish Krona', symbol: 'kr', rate: 10.60 },
+            { code: 'SGD', name: 'Singapore Dollar', symbol: '$', rate: 1.35 },
+            { code: 'SHP', name: 'Saint Helena Pound', symbol: '£', rate: 0.78 },
+            { code: 'SLL', name: 'Leone', symbol: 'Le', rate: 22000.00 },
+            { code: 'SOS', name: 'Somali Shilling', symbol: 'S', rate: 571.00 },
+            { code: 'SRD', name: 'Surinam Dollar', symbol: '$', rate: 31.50 },
+            { code: 'SSP', name: 'South Sudanese Pound', symbol: '£', rate: 130.00 },
+            { code: 'STN', name: 'Dobra', symbol: 'Db', rate: 22.50 },
+            { code: 'SYP', name: 'Syrian Pound', symbol: '£', rate: 13000.00 },
+            { code: 'SZL', name: 'Lilangeni', symbol: 'E', rate: 18.50 },
+            { code: 'THB', name: 'Baht', symbol: '฿', rate: 36.50 },
+            { code: 'TJS', name: 'Somoni', symbol: 'SM', rate: 10.70 },
+            { code: 'TMT', name: 'Turkmenistan New Manat', symbol: 'T', rate: 3.50 },
+            { code: 'TND', name: 'Tunisian Dinar', symbol: 'د.ত', rate: 3.12 },
+            { code: 'TOP', name: 'Pa\'anga', symbol: 'T$', rate: 2.35 },
+            { code: 'TRY', name: 'Turkish Lira', symbol: '₺', rate: 32.20 },
+            { code: 'TTD', name: 'Trinidad and Tobago Dollar', symbol: 'TT$', rate: 6.78 },
+            { code: 'TWD', name: 'New Taiwan Dollar', symbol: 'NT$', rate: 32.40 },
+            { code: 'TZS', name: 'Tanzanian Shilling', symbol: 'TSh', rate: 2600.00 },
+            { code: 'UAH', name: 'Hryvnia', symbol: '₴', rate: 40.50 },
+            { code: 'UGX', name: 'Uganda Shilling', symbol: 'USh', rate: 3750.00 },
+            { code: 'UYU', name: 'Peso Uruguayo', symbol: '$U', rate: 39.20 },
+            { code: 'UZS', name: 'Uzbekistan Sum', symbol: 'лв', rate: 12600.00 },
+            { code: 'VES', name: 'Bolívar Soberano', symbol: 'Bs.', rate: 36.50 },
+            { code: 'VND', name: 'Dong', symbol: '₫', rate: 25400.00 },
+            { code: 'VUV', name: 'Vatu', symbol: 'VT', rate: 120.00 },
+            { code: 'WST', name: 'Tala', symbol: 'WS$', rate: 2.75 },
+            { code: 'XAF', name: 'CFA Franc BEAC', symbol: 'FCFA', rate: 605.00 },
+            { code: 'XCD', name: 'East Caribbean Dollar', symbol: '$', rate: 2.70 },
+            { code: 'XOF', name: 'CFA Franc BCEAO', symbol: 'CFA', rate: 605.00 },
+            { code: 'XPF', name: 'CFP Franc', symbol: '₣', rate: 110.00 },
+            { code: 'YER', name: 'Yemeni Rial', symbol: '﷼', rate: 250.00 },
+            { code: 'ZAR', name: 'Rand', symbol: 'R', rate: 18.50 },
+            { code: 'ZMW', name: 'Zambian Kwacha', symbol: 'ZK', rate: 25.50 },
+            { code: 'ZWL', name: 'Zimbabwe Dollar', symbol: '$', rate: 361.00 },
+            { code: 'USDT', name: 'Tether (USDT)', symbol: '🪙', rate: 1.0 },
+            { code: 'TON', name: 'Toncoin (TON)', symbol: '💎', rate: 0.138 },
+            { code: 'BTC', name: 'Bitcoin (BTC)', symbol: '🪙', rate: 0.0000108 },
+            { code: 'ETH', name: 'Ethereum (ETH)', symbol: '🪙', rate: 0.00032 }
+        ];
+
+        const marketTokens = {
+            USDT: { price: 1.00, change: 0.12 },
+            BTC: { price: 92450.00, change: 1.45 },
+            TON: { price: 7.24, change: -0.12 },
+            ETH: { price: 3120.75, change: -0.52 }
+        };
+
+        // Advanced Country Flag emoji Generator from ISO Code
+        function getFlag(code) {
+            const overrides = {
+                'EUR': 'EU', 'GBP': 'GB', 'BTC': '🪙', 'USDT': '🪙', 'TON': '💎', 'ETH': '🪙', 'BNB': '🪙', 'USD': 'US',
+                'ANG': 'CW', 'XOF': 'SN', 'XAF': 'CM', 'XCD': 'DM', 'XPF': 'PF', 'BAM': 'BA', 'CHF': 'CH'
+            };
+            const countryCode = overrides[code] || code.substring(0, 2);
+            if (countryCode === '🪙') return '🪙';
+            if (countryCode === '💎') return '💎';
+            
+            try {
+                const codePoints = countryCode
+                    .toUpperCase()
+                    .split('')
+                    .map(char => 127397 + char.charCodeAt(0));
+                return String.fromCodePoint(...codePoints);
+            } catch (err) {
+                return '🏳️'; 
+            }
+        }
+
+        // Multi-Currency Live Ticker Engine
+        setInterval(() => {
+            for (let key in marketTokens) {
+                const pct = (Math.random() * 0.3 - 0.15) / 100;
+                marketTokens[key].price += marketTokens[key].price * pct;
+                marketTokens[key].change += pct * 100;
+
+                rawUsdBalance += rawUsdBalance * (pct * 0.18);
+            }
+            renderGlobalBalance();
+            updateMarketRates();
+            calculateOutputs();
+        }, 2000);
+
+        // Dynamic market rates updater for static HTML elements (No DOM rewrites to prevent bugs)
+        function updateMarketRates() {
+            try {
+                const cur = currencies.find(c => c.code === currentCurrency);
+                if (!cur) return;
+                
+                for (let key in marketTokens) {
+                    const priceEl = document.getElementById(`ticker-${key}`);
+                    const changeEl = document.getElementById(`change-${key}`);
+                    if (!priceEl || !changeEl) continue;
+                    
+                    let priceInTargetCurrency = key === 'USDT' ? cur.rate : marketTokens[key].price * cur.rate;
+                    
+                    priceEl.innerText = `${cur.symbol}${priceInTargetCurrency.toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: (priceInTargetCurrency > 1000 ? 0 : 2)
+                    })}`;
+                    
+                    const isPositive = marketTokens[key].change >= 0;
+                    changeEl.innerText = `${isPositive ? '+' : ''}${marketTokens[key].change.toFixed(2)}%`;
+                    changeEl.className = `text-[10px] font-bold ${isPositive ? 'text-emerald-500' : 'text-rose-500'} block mt-0.5`;
+                }
+            } catch (err) {
+                console.error("Error updating ticker rates:", err);
+            }
+        }
+
+        // Tap for Balance Visibility Toggle Logic
+        const balanceBtn = document.getElementById('balance-btn');
+        let hideBalanceState = false;
+
+        balanceBtn.addEventListener('click', () => {
+            hideBalanceState = !hideBalanceState;
+            renderGlobalBalance();
+        });
+
+        function renderGlobalBalance() {
+            try {
+                if (hideBalanceState) {
+                    balanceBtn.innerHTML = '<i class="fa-solid fa-circle-dollar-to-slot mr-1.5 text-blue-500"></i> Tap for Balance';
+                    return;
+                }
+                const cur = currencies.find(c => c.code === currentCurrency);
+                if (!cur) return;
+                const rawConvertedBalance = rawUsdBalance * cur.rate;
+                balanceBtn.innerHTML = `<i class="fa-solid fa-coins mr-1.5 text-[#F0B90B]"></i> ${cur.symbol} ${rawConvertedBalance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            } catch (err) {
+                console.error("Error rendering balance:", err);
+            }
+        }
+
+        renderGlobalBalance();
+
+        // Custom Notification Toast Function
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-message');
+            toastMsg.innerText = message;
+
+            // Trigger animation classes
+            toast.classList.remove('opacity-0', '-translate-y-4', 'pointer-events-none');
+            toast.classList.add('opacity-100', 'translate-y-0');
+
+            // Close after 2.5 seconds
+            setTimeout(() => {
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', '-translate-y-4', 'pointer-events-none');
+            }, 2500);
+        }
+
+        // Side-Menu Navigation Drawer Toggle (Mobile)
+        const openSidebarBtn = document.getElementById('open-sidebar-btn');
+        const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+        const sidebarMenu = document.getElementById('sidebar-menu');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+        function openSidebar() {
+            sidebarOverlay.classList.remove('hidden');
+            setTimeout(() => {
+                sidebarOverlay.classList.remove('opacity-0');
+                sidebarMenu.classList.remove('translate-x-full');
+            }, 50);
+        }
+
+        function closeSidebar() {
+            sidebarMenu.classList.add('translate-x-full');
+            sidebarOverlay.classList.add('opacity-0');
+            setTimeout(() => {
+                sidebarOverlay.classList.add('hidden');
+            }, 300);
+        }
+
+        openSidebarBtn.addEventListener('click', openSidebar);
+        closeSidebarBtn.addEventListener('click', closeSidebar);
+        sidebarOverlay.addEventListener('click', closeSidebar);
+
+        // Sidebar - Switch Theme
+        const themeToggle = document.getElementById('theme-toggle');
+        themeToggle.addEventListener('change', () => {
+            if (themeToggle.checked) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+
+        // SEARCHABLE CURRENCY SELECTOR BOTTOM SHEET
+        const currencyModal = document.getElementById('currency-modal');
+        const closeCurrencyModalBtn = document.getElementById('close-currency-modal');
+        const currencySearchInput = document.getElementById('currency-search-input');
+        const currencyListContainer = document.getElementById('currency-list-container');
+        const sidebarCurrencyDisplay = document.getElementById('current-currency-display-sidebar');
+
+        function openCurrencyModal() {
+            closeSidebar();
+            currencyModal.classList.remove('hidden');
+            renderCurrencyList('');
+            currencySearchInput.value = '';
+            
+            setTimeout(() => {
+                currencyModal.classList.remove('opacity-0');
+                currencyModal.querySelector('div').classList.remove('translate-y-full');
+            }, 50);
+        }
+
+        function closeCurrencyModal() {
+            currencyModal.querySelector('div').classList.add('translate-y-full');
+            currencyModal.classList.add('opacity-0');
+            setTimeout(() => {
+                currencyModal.classList.add('hidden');
+            }, 300);
+        }
+
+        function renderCurrencyList(filterText = '') {
+            currencyListContainer.innerHTML = '';
+            const filtered = currencies.filter(c => 
+                c.code.toLowerCase().includes(filterText.toLowerCase()) || 
+                c.name.toLowerCase().includes(filterText.toLowerCase())
+            );
+
+            if (filtered.length === 0) {
+                currencyListContainer.innerHTML = `
+                    <div class="text-center py-8 text-gray-400 dark:text-slate-500 text-xs">
+                        <i class="fa-solid fa-triangle-exclamation text-lg mb-1.5 block"></i> No currency found!
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(c => {
+                const isSelected = currentCurrency === c.code;
+                const flagEmoji = getFlag(c.code);
+                const itemHTML = `
+                    <div onclick="selectCurrency('${c.code}')" class="flex justify-between items-center p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-900 cursor-pointer transition-all ${isSelected ? 'bg-amber-500/10 dark:bg-amber-500/5 border border-amber-500/20' : 'border border-transparent'}">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-xl">${flagEmoji}</span>
+                            <div>
+                                <span class="text-xs font-bold text-gray-900 dark:text-white">${c.code}</span>
+                                <span class="text-[10px] text-gray-400 dark:text-slate-500 block">${c.name}</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs font-semibold text-gray-400 dark:text-slate-500">${c.symbol}</span>
+                            ${isSelected ? '<i class="fa-solid fa-circle-check text-amber-500 text-xs"></i>' : ''}
+                        </div>
+                    </div>
+                `;
+                currencyListContainer.insertAdjacentHTML('beforeend', itemHTML);
+            });
+        }
+
+        // Robust currency selection logic (updates only text, ensures 100% notification fire)
+        function selectCurrency(code) {
+            try {
+                currentCurrency = code;
+                const cur = currencies.find(c => c.code === code);
+                if (!cur) return;
+                
+                const flagEmoji = getFlag(cur.code);
+                if (sidebarCurrencyDisplay) {
+                    sidebarCurrencyDisplay.innerHTML = `${flagEmoji} ${cur.code} (${cur.symbol})`;
+                }
+
+                renderGlobalBalance();
+                updateMarketRates();
+                closeCurrencyModal();
+
+                // Trigger successful conversion toast notification
+                showToast(`Success! Converted to ${cur.code} (${cur.symbol})`);
+            } catch (err) {
+                console.error("Critical error in currency selector logic:", err);
+            }
+        }
+
+        currencySearchInput.addEventListener('keyup', (e) => {
+            renderCurrencyList(e.target.value);
+        });
+
+        closeCurrencyModalBtn.addEventListener('click', closeCurrencyModal);
+
+        // PRESET EXCHANGE MODAL SHEET
+        const exchangeModal = document.getElementById('exchange-modal');
+        const swapFrom = document.getElementById('swap-from');
+        const swapTo = document.getElementById('swap-to');
+        const swapAmountFrom = document.getElementById('swap-amount-from');
+        const swapAmountTo = document.getElementById('swap-amount-to');
+
+        function openExchangeModal() {
+            exchangeModal.classList.remove('hidden');
+            calculateOutputs();
+            setTimeout(() => {
+                exchangeModal.classList.remove('opacity-0');
+                exchangeModal.querySelector('div').classList.remove('translate-y-full');
+            }, 50);
+        }
+
+        function closeExchangeModal() {
+            exchangeModal.querySelector('div').classList.add('translate-y-full');
+            exchangeModal.classList.add('opacity-0');
+            setTimeout(() => {
+                exchangeModal.classList.add('hidden');
+            }, 300);
+        }
+
+        function calculateOutputs() {
+            try {
+                const val = parseFloat(swapAmountFrom.value) || 0;
+                const from = swapFrom.value;
+                const to = swapTo.value;
+
+                const baseUsdPrices = {
+                    'bsc-usdt': 1.0,
+                    'trust-usdt': 1.0,
+                    'trust-btc': marketTokens.BTC.price,
+                    'xrocket-ton': marketTokens.TON.price
+                };
+
+                const inputUsd = val * baseUsdPrices[from];
+                const result = inputUsd / baseUsdPrices[to];
+
+                let displayLabel = 'TON';
+                if (to.includes('usdt')) displayLabel = 'USDT';
+                if (to.includes('btc')) displayLabel = 'BTC';
+
+                if (swapAmountTo) {
+                    swapAmountTo.innerText = `${result.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 4})} ${displayLabel}`;
+                }
+            } catch (err) {
+                console.error("Error calculating swap outputs:", err);
+            }
+        }
+
+        swapFrom.addEventListener('change', calculateOutputs);
+        swapTo.addEventListener('change', calculateOutputs);
+        swapAmountFrom.addEventListener('input', calculateOutputs);
+
+        // Transaction Broadcast Simulation
+        const txModal = document.getElementById('tx-modal');
+        const txTitle = document.getElementById('tx-title');
+        const txDesc = document.getElementById('tx-desc');
+        const txIcon = document.getElementById('tx-icon');
+        const txSpinner = document.getElementById('tx-spinner');
+        const txBtn = document.getElementById('tx-btn');
+
+        function runSwapSimulation() {
+            closeExchangeModal();
+            txModal.classList.remove('hidden');
+            txSpinner.classList.remove('hidden');
+            txBtn.classList.add('hidden');
+            txTitle.innerText = "Inter-network Routing";
+            txDesc.innerText = "Re-routing transaction safely (1/3)...";
+            txIcon.className = "fa-solid fa-arrow-right-arrow-left text-xl text-amber-500 animate-pulse";
+
+            setTimeout(() => {
+                txDesc.innerText = "Blockchain confirmation processing (2/3)...";
+            }, 1200);
+
+            setTimeout(() => {
+                txDesc.innerText = "Finalizing inter-wallet swap (3/3)...";
+            }, 2400);
+
+            setTimeout(() => {
+                txSpinner.classList.add('hidden');
+                txBtn.classList.remove('hidden');
+                txIcon.className = "fa-solid fa-circle-check text-2xl text-emerald-500";
+                txTitle.innerText = "Exchange Success!";
+                txDesc.innerText = "Assets delivered directly to the target wallet address.";
+            }, 3600);
+        }
+
+        function hideTxModal() {
+            txModal.classList.add('hidden');
+        }
+
+        // Auto + Manual Slide Carousel system (Touch/Mouse Swipe)
+        const promoCarousel = document.getElementById('promo-carousel');
+        const promoDots = document.getElementById('promo-dots').children;
+        let isInteracting = false;
+        let autoScrollInterval;
+
+        function runAutoSlider() {
+            autoScrollInterval = setInterval(() => {
+                if (isInteracting) return;
+                const slides = promoCarousel.querySelectorAll('.promo-slide');
+                const slideWidth = slides[0].offsetWidth + 16;
+                const maxScroll = promoCarousel.scrollWidth - promoCarousel.clientWidth;
+
+                if (promoCarousel.scrollLeft >= maxScroll - 10) {
+                    promoCarousel.scrollTo({ left: 0, behavior: 'smooth' });
+                } else {
+                    promoCarousel.scrollBy({ left: slideWidth, behavior: 'smooth' });
+                }
+            }, 4500);
+        }
+
+        // Mouse Drag scroll (Manual Swipe support for PC)
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+
+        promoCarousel.addEventListener('mousedown', (e) => {
+            isDown = true;
+            isInteracting = true;
+            startX = e.pageX - promoCarousel.offsetLeft;
+            scrollLeft = promoCarousel.scrollLeft;
+        });
+        promoCarousel.addEventListener('mouseleave', () => {
+            isDown = false;
+            setTimeout(() => { isInteracting = false; }, 2000);
+        });
+        promoCarousel.addEventListener('mouseup', () => {
+            isDown = false;
+            setTimeout(() => { isInteracting = false; }, 2000);
+        });
+        promoCarousel.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - promoCarousel.offsetLeft;
+            const walk = (x - startX) * 1.5;
+            promoCarousel.scrollLeft = scrollLeft - walk;
+        });
+
+        // Touch Swipe support for Mobile screens
+        promoCarousel.addEventListener('touchstart', () => {
+            isInteracting = true;
+        });
+        promoCarousel.addEventListener('touchend', () => {
+            setTimeout(() => { isInteracting = false; }, 2500);
+        });
+
+        // Update Dots on Swipe/Scroll trigger
+        promoCarousel.addEventListener('scroll', () => {
+            const index = Math.round(promoCarousel.scrollLeft / promoCarousel.clientWidth);
+            for (let i = 0; i < promoDots.length; i++) {
+                if (i === index) {
+                    promoDots[i].className = "w-3.5 h-1 rounded-full bg-amber-500 dark:bg-[#F0B90B] transition-all duration-300";
+                } else {
+                    promoDots[i].className = "w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-slate-700 transition-all duration-300";
+                }
+            }
+        });
+
+        runAutoSlider();
+    </script>
+
+</body>
+</html>
