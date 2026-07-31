@@ -137,7 +137,7 @@ export default function BroxpayWallet() {
                 <i className="fa-solid fa-magnifying-glass"></i>
               </div>
               <div onClick={() => setSidebarOpen(true)} className="text-gray-600 dark:text-gray-300 text-sm cursor-pointer p-2 bg-gray-100 dark:bg-slate-800/80 hover:bg-gray-200 dark:hover:bg-slate-800 rounded-full transition-colors">
-                <i class="fa-solid fa-bars"></i>
+                <i className="fa-solid fa-bars"></i>
               </div>
             </div>
           </div>
@@ -151,7 +151,7 @@ export default function BroxpayWallet() {
               {/* Tunnel Status */}
               <div className="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/20 rounded-2xl p-3.5 flex items-center justify-between">
                 <div className="flex items-center space-x-2.5">
-                  <span class="text-base">⚡</span>
+                  <span className="text-base">⚡</span>
                   <div>
                     <span className="text-[9px] text-amber-500 dark:text-[#F0B90B] font-extrabold uppercase tracking-wider">Router Channel Online</span>
                     <p className="text-[10px] text-gray-550 dark:text-slate-400 font-medium">Binance &harr; XRocket &harr; TrustWallet Active</p>
@@ -198,7 +198,7 @@ export default function BroxpayWallet() {
                 <h3 className="font-extrabold text-gray-800 dark:text-slate-400 text-[10px] tracking-wider uppercase mb-2.5">Promos & Deals</h3>
                 <div className="overflow-x-auto flex space-x-4 snap-x snap-mandatory scrollbar-none cursor-grab" id="promo-carousel">
                   <div className="promo-slide w-full flex-shrink-0 snap-center bg-gradient-to-br from-[#12161F] via-[#1E232F] to-[#12161F] border border-slate-800 rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden h-[135px]">
-                    <div class="absolute -right-6 -top-6 w-24 h-24 bg-amber-500/10 rounded-full blur-xl"></div>
+                    <div className="absolute -right-6 -top-6 w-24 h-24 bg-amber-500/10 rounded-full blur-xl"></div>
                     <div className="flex justify-between items-start z-10 text-white">
                       <div>
                         <span className="bg-[#F0B90B]/10 border border-[#F0B90B]/30 text-[#F0B90B] text-[8px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider">Broxpay Router</span>
@@ -264,7 +264,7 @@ export default function BroxpayWallet() {
             </div>
           </div>
           <div className="flex flex-col items-center text-gray-400 dark:text-slate-500 cursor-pointer">
-            <i class="fa-solid fa-file-lines text-lg"></i>
+            <i className="fa-solid fa-file-lines text-lg"></i>
             <span className="text-[10px] font-extrabold mt-0.5">History</span>
           </div>
         </div>
@@ -351,7 +351,7 @@ export default function BroxpayWallet() {
                   </button>
                 </div>
 
-                <div class="space-y-4">
+                <div className="space-y-4">
                   <div className="bg-gray-50 dark:bg-slate-900 p-3.5 rounded-xl border border-gray-100 dark:border-slate-800 flex justify-between items-center">
                     <div>
                       <label className="block text-[8px] font-bold text-gray-400 dark:text-slate-500 uppercase">From Platform</label>
@@ -377,7 +377,7 @@ export default function BroxpayWallet() {
 
                   <div className="bg-gray-50 dark:bg-slate-900 p-3.5 rounded-xl border border-gray-100 dark:border-slate-800 flex justify-between items-center">
                     <div>
-                      <label className="block text-[8px] font-bold text-gray-400 dark:text-slate-500 uppercase">To Platform</label>
+                      <label className="block text-[8px] font-bold text-gray-400 dark:text-slate-550 uppercase">To Platform</label>
                       <select value={swapTo} onChange={(e) => setSwapTo(e.target.value)} className="bg-transparent text-xs font-bold text-gray-800 dark:text-slate-200 outline-none mt-1">
                         <option value="xrocket-ton" className="dark:bg-slate-900">XRocket - TON</option>
                         <option value="trust-usdt" className="dark:bg-slate-900">TrustWallet - USDT</option>
