@@ -13,31 +13,30 @@ import {
 
 export default function App() {
   const { width } = useWindowDimensions();
-  const isDesktop = width >= 900; // ডেস্কটপ স্ক্রিনে এটি স্বয়ংক্রিয়ভাবে স্প্লিট-ড্যাশবোর্ডে রূপান্তরিত হবে
+  const isDesktop = width >= 900; // ৭৬৮ বা ৯০০ পিক্সেলের বেশি হলে এটি স্বয়ংক্রিয়ভাবে প্রফেশনাল ড্যাশবোর্ডে রূপান্তরিত হবে
 
   const [currentView, setCurrentView] = useState('home'); // home, swap, history, deposit
   const [balance, setBalance] = useState(1518.68);
   const [hideBalance, setHideBalance] = useState(false);
 
-  // লাইভ ক্রিপ্টো প্রাইস ডেটা
+  // লাইভ ক্রিপ্টো রেট ডেটা (মনোক্রোম ফ্ল্যাট সিম্বল সহ)
   const [marketTokens, setMarketTokens] = useState({
-    USDT: { name: 'Tether US', icon: '₮', price: 1.00, change: 0.12, color: '#10B981' },
-    BTC: { name: 'Bitcoin', icon: '₿', price: 92450.00, change: 1.45, color: '#F0B90B' },
-    TON: { name: 'Toncoin', icon: '💎', price: 7.24, change: -0.12, color: '#0098EA' },
-    ETH: { name: 'Ethereum', icon: 'Ξ', price: 3120.75, change: -0.52, color: '#6366F1' }
+    USDT: { name: 'Tether US', icon: '$', price: 1.00, change: 0.12, color: '#10B981' },
+    BTC: { name: 'Bitcoin', icon: 'B', price: 92450.00, change: 1.45, color: '#F0B90B' },
+    TON: { name: 'Toncoin', icon: 'T', price: 7.24, change: -0.12, color: '#0098EA' },
+    ETH: { name: 'Ethereum', icon: 'E', price: 3120.75, change: -0.52, color: '#6366F1' }
   });
 
   const [swapFrom, setSwapFrom] = useState('USDT');
   const [swapTo, setSwapTo] = useState('TON');
   const [swapAmount, setSwapAmount] = useState('100');
 
-  // লাইভ রেট রেন্ডারিং লুপ
   useEffect(() => {
     const interval = setInterval(() => {
       setMarketTokens((prev) => {
         const updated = { ...prev };
         for (let key in updated) {
-          const pct = (Math.random() * 0.2 - 0.1) / 100;
+          const pct = (Math.random() * 0.3 - 0.15) / 100;
           updated[key as keyof typeof updated].price += updated[key as keyof typeof updated].price * pct;
           updated[key as keyof typeof updated].change += pct * 100;
         }
@@ -56,31 +55,40 @@ export default function App() {
     return `${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 })} ${swapTo}`;
   }, [swapAmount, swapFrom, swapTo, marketTokens]);
 
+  const handleSwap = () => {
+    const amountNum = parseFloat(swapAmount) || 0;
+    if (amountNum <= 0) {
+      alert("Please enter a valid amount!");
+      return;
+    }
+    alert("Success! Auto-routing transaction processed successfully!");
+    setCurrentView('history');
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={[styles.shell, isDesktop && styles.desktopShell]}>
         
-        {/* ক. ডেক্সটপ লাক্সারি সাইডবার */}
+        {/* ক. ডেক্সটপ লাক্সারি সাইডবার (শুধুমাত্র বড় স্ক্রিনে দেখাবে) */}
         {isDesktop && (
           <View style={styles.sidebar}>
             <View>
               <View style={styles.sidebarLogo}>
-                <Text style={styles.logoIcon}>⚡</Text>
-                <Text style={styles.logoText}>Broxpay</Text>
+                <Text style={styles.logoText}>BROXPAY</Text>
               </View>
 
               <View style={styles.menuList}>
                 <TouchableOpacity onPress={() => setCurrentView('home')} style={[styles.menuItem, currentView === 'home' && styles.menuItemActive]}>
-                  <Text style={[styles.menuText, currentView === 'home' && {color: '#F0B90B'}]}>🏠 Dashboard</Text>
+                  <Text style={[styles.menuText, currentView === 'home' && {color: '#F0B90B'}]}>Dashboard</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => setCurrentView('swap')} style={[styles.menuItem, currentView === 'swap' && styles.menuItemActive]}>
-                  <Text style={[styles.menuText, currentView === 'swap' && {color: '#F0B90B'}]}>🔄 Auto Exchange</Text>
+                  <Text style={[styles.menuText, currentView === 'swap' && {color: '#F0B90B'}]}>Auto Exchange</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => setCurrentView('history')} style={[styles.menuItem, currentView === 'history' && styles.menuItemActive]}>
-                  <Text style={[styles.menuText, currentView === 'history' && {color: '#F0B90B'}]}>📊 Ledger History</Text>
+                  <Text style={[styles.menuText, currentView === 'history' && {color: '#F0B90B'}]}>Ledger History</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => setCurrentView('deposit')} style={[styles.menuItem, currentView === 'deposit' && styles.menuItemActive]}>
-                  <Text style={[styles.menuText, currentView === 'deposit' && {color: '#F0B90B'}]}>📥 Deposit Funds</Text>
+                  <Text style={[styles.menuText, currentView === 'deposit' && {color: '#F0B90B'}]}>Deposit Funds</Text>
                 </TouchableOpacity>
               </View>
             </div>
@@ -91,7 +99,7 @@ export default function App() {
         {/* খ. মূল ভিউপোর্ট এরিয়া */}
         <View style={styles.viewport}>
           
-          {/* হেডার এরিয়া */}
+          {/* হেডার এরিয়া (Glassmorphic) */}
           <View style={styles.header}>
             <View style={styles.profileBox}>
               <View style={styles.avatarBorder}>
@@ -100,10 +108,10 @@ export default function App() {
                 </div>
               </View>
               <View>
-                <Text style={styles.userName}>MAC SAMUAL <Text style={{color: '#0098EA', fontSize: 10}}>✓</Text></Text>
+                <Text style={styles.userName}>MAC SAMUAL</Text>
                 <TouchableOpacity onPress={() => setHideBalance(!hideBalance)} style={styles.balanceContainer}>
                   <Text style={styles.balanceValue}>
-                    🪙 {hideBalance ? 'Tap for Balance' : `$ ${balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                    {hideBalance ? 'TAP FOR BALANCE' : `$ ${balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -125,29 +133,29 @@ export default function App() {
                   <View style={styles.viewPane}>
                     {/* টানেল নিয়ন ব্যানার */}
                     <View style={styles.neonBanner}>
-                      <View style={styles.bannerGlowIcon}><Text style={{fontSize: 18, color: '#0098EA'}}>⚡</Text></View>
+                      <View style={styles.bannerGlowIcon}><Text style={{fontSize: 14, color: '#0098EA', fontWeight: 'bold'}}>&gt;&gt;</Text></View>
                       <View style={{ flex: 1, marginLeft: 14 }}>
                         <Text style={styles.bannerTag}>Secure Tunnel</Text>
-                        <Text style={styles.bannerTitle}>Binance ⇄ XRocket Auto Channel</Text>
+                        <Text style={styles.bannerTitle}>Binance to XRocket Auto Channel</Text>
                       </View>
                     </View>
 
-                    {/* ৪টি লাক্সারি অ্যাকশন বাটন */}
+                    {/* ৪টি লাক্সারি অ্যাকশন বাটন (Monochrome icons used) */}
                     <View style={styles.actionCard}>
                       <TouchableOpacity onPress={() => setCurrentView('deposit')} style={styles.actionBtn}>
-                        <View style={[styles.actionIcon, {borderColor: 'rgba(0,152,234,0.15)'}]}><Text style={{fontSize: 16, color: '#0098EA'}}>📥</Text></View>
+                        <View style={[styles.actionIcon, {borderColor: 'rgba(0,152,234,0.15)'}]}><Text style={{fontSize: 15, color: '#0098EA', fontWeight: 'bold'}}>↓</Text></View>
                         <Text style={styles.actionLabel}>Deposit</Text>
                       </TouchableOpacity>
                       <TouchableOpacity onPress={() => setCurrentView('swap')} style={styles.actionBtn}>
-                        <View style={[styles.actionIcon, {borderColor: 'rgba(240,185,11,0.2)'}]}><Text style={{fontSize: 16, color: '#F0B90B'}}>🔄</Text></View>
+                        <View style={[styles.actionIcon, {borderColor: 'rgba(240,185,11,0.2)'}]}><Text style={{fontSize: 15, color: '#F0B90B', fontWeight: 'bold'}}>⇄</Text></View>
                         <Text style={styles.actionLabel}>Swap</Text>
                       </TouchableOpacity>
                       <TouchableOpacity onPress={() => alert("Verify L2 details.")} style={styles.actionBtn}>
-                        <View style={[styles.actionIcon, {borderColor: 'rgba(16,185,129,0.15)'}]}><Text style={{fontSize: 16, color: '#10B981'}}>🛡️</Text></View>
+                        <View style={[styles.actionIcon, {borderColor: 'rgba(16,185,129,0.15)'}]}><Text style={{fontSize: 12, color: '#10B981', fontWeight: 'bold'}}>ID</Text></View>
                         <Text style={styles.actionLabel}>KYC</Text>
                       </TouchableOpacity>
                       <TouchableOpacity onPress={() => setCurrentView('history')} style={styles.actionBtn}>
-                        <View style={[styles.actionIcon, {borderColor: 'rgba(99,102,241,0.15)'}]}><Text style={{fontSize: 16, color: '#6366F1'}}>📊</Text></View>
+                        <View style={[styles.actionIcon, {borderColor: 'rgba(99,102,241,0.15)'}]}><Text style={{fontSize: 15, color: '#6366F1', fontWeight: 'bold'}}>☰</Text></View>
                         <Text style={styles.actionLabel}>History</Text>
                       </TouchableOpacity>
                     </View>
@@ -168,7 +176,7 @@ export default function App() {
                 {/* সোয়াপ কার্ড */}
                 {currentView === 'swap' && (
                   <View style={styles.viewPane}>
-                    <Text style={styles.viewTitle}>🔄 Instant Auto-Router</Text>
+                    <Text style={styles.viewTitle}>Auto-Router Swap</Text>
                     
                     <View style={styles.swapBox}>
                       <View style={styles.inputContainer}>
@@ -189,7 +197,7 @@ export default function App() {
                       </View>
 
                       <View style={styles.routingArrow}>
-                        <Text style={{fontSize: 12, color: '#000'}}>⬇</Text>
+                        <Text style={{fontSize: 12, color: '#000', fontWeight: 'bold'}}>↓</Text>
                       </View>
 
                       <View style={styles.inputContainer}>
@@ -214,10 +222,10 @@ export default function App() {
                 {/* ডিপোজিট */}
                 {currentView === 'deposit' && (
                   <View style={styles.viewPane}>
-                    <Text style={styles.viewTitle}>📥 Deposit Assets</Text>
+                    <Text style={styles.viewTitle}>Deposit Assets</Text>
                     <View style={styles.swapBox}>
                       <View style={styles.qrContainer}>
-                        <Text style={{fontSize: 48}}>🏁</Text>
+                        <Text style={{fontSize: 14, color: '#000', fontWeight: 'bold'}}>QR CODE</Text>
                       </View>
                       <Text style={styles.fieldLabel}>Your Deposit Address</Text>
                       <Text style={styles.addressText}>EQC384NfL829Df101vK02Mv9fL...</Text>
@@ -231,14 +239,14 @@ export default function App() {
                 {/* হিস্ট্রি */}
                 {currentView === 'history' && (
                   <View style={styles.viewPane}>
-                    <Text style={styles.viewTitle}>📊 Transaction History</Text>
+                    <Text style={styles.viewTitle}>Transaction History</Text>
                     <View style={styles.swapBox}>
                       <View style={styles.historyItem}>
                         <View>
-                          <Text style={styles.historyTitle}>USDT ⇄ TON Swap</Text>
-                          <Text style={styles.historySub}>Binance ⇄ XRocket Channel</Text>
+                          <Text style={styles.historyTitle}>USDT to TON Swap</Text>
+                          <Text style={styles.historySub}>Binance to XRocket Channel</Text>
                         </View>
-                        <Text style={styles.historyStatus}>✓ Completed</Text>
+                        <Text style={styles.historyStatus}>Completed</Text>
                       </View>
                     </View>
                   </View>
@@ -246,7 +254,7 @@ export default function App() {
 
               </View>
 
-              {/* ডান পাশের প্যানেল (লাইভ মার্কেট ট্রেন্ডস - উজ্জ্বল ও রিডেবল করা হয়েছে) */}
+              {/* ডান পাশের প্যানেল (কয়েন নেম উজ্জ্বল করা হয়েছে) */}
               <View style={isDesktop ? {flex: 4.8, marginLeft: 26} : {width: '100%', marginTop: 20}}>
                 <Text style={styles.sectionTitle}>Market Trends</Text>
                 <View style={styles.marketCard}>
@@ -254,7 +262,7 @@ export default function App() {
                     <View key={key} style={styles.marketItem}>
                       <div style={{ display: 'flex', alignItems: 'center' }}>
                         <View style={[styles.marketIconBox, {borderColor: token.color + '40', backgroundColor: token.color + '08'}]}>
-                          <Text style={{color: token.color, fontSize: 13, fontWeight: 'bold'}}>{token.icon}</Text>
+                          <Text style={{color: token.color, fontSize: 11, fontWeight: 'bold'}}>{token.icon}</Text>
                         </View>
                         <View style={{marginLeft: 12}}>
                           <Text style={styles.tokenName}>{key}</Text>
@@ -275,19 +283,19 @@ export default function App() {
             </View>
           </ScrollView>
 
-          {/* গ. বটম নেভিগেশন ট্যাব বার */}
+          {/* গ. বটম নেভিগেশন ট্যাব বার (ক্লিন ও টেক্সট আইকন সহ) */}
           {!isDesktop && (
             <View style={styles.navBar}>
               <TouchableOpacity onPress={() => setCurrentView('home')} style={styles.navItem}>
-                <Text style={{ fontSize: 18, color: currentView === 'home' ? '#F0B90B' : '#475569' }}>🏠</Text>
+                <Text style={[styles.navLabelIcon, { color: currentView === 'home' ? '#F0B90B' : '#475569' }]}>DASH</Text>
                 <Text style={[styles.navLabel, { color: currentView === 'home' ? '#F0B90B' : '#475569' }]}>Home</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => setCurrentView('swap')} style={styles.navItem}>
-                <Text style={{ fontSize: 18, color: currentView === 'swap' ? '#F0B90B' : '#475569' }}>🔄</Text>
-                <Text style={[styles.navLabel, { color: currentView === 'swap' ? '#475569' : '#475569' }]}>Swap</Text>
+                <Text style={[styles.navLabelIcon, { color: currentView === 'swap' ? '#F0B90B' : '#475569' }]}>SWAP</Text>
+                <Text style={[styles.navLabel, { color: currentView === 'swap' ? '#F0B90B' : '#475569' }]}>Swap</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => setCurrentView('history')} style={styles.navItem}>
-                <Text style={{ fontSize: 18, color: currentView === 'history' ? '#F0B90B' : '#475569' }}>📊</Text>
+                <Text style={[styles.navLabelIcon, { color: currentView === 'history' ? '#F0B90B' : '#475569' }]}>HIST</Text>
                 <Text style={[styles.navLabel, { color: currentView === 'history' ? '#F0B90B' : '#475569' }]}>History</Text>
               </TouchableOpacity>
             </View>
@@ -329,12 +337,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 30,
     columnGap: 10,
-  },
-  logoIcon: {
-    fontSize: 22,
-    textShadowColor: 'rgba(240, 185, 11, 0.4)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 10,
   },
   logoText: {
     color: '#F0B90B',
@@ -724,9 +726,14 @@ const styles = StyleSheet.create({
   navItem: {
     alignItems: 'center',
   },
+  navLabelIcon: {
+    fontSize: 9,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+  },
   navLabel: {
     fontSize: 8,
     fontWeight: '850',
-    marginTop: 4,
+    marginTop: 3,
   }
 });
