@@ -4,37 +4,31 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { currencies } from './currencies';
 
 export default function BroxpayWallet() {
-  // ১. অলরেডি এস্টাবলিশড গ্লোবাল স্টেইটস (React States)
   const [currentCurrency, setCurrentCurrency] = useState('USD');
   const [rawUsdBalance, setRawUsdBalance] = useState(1518.68);
-  const [hideBalance, setHideBalance] = useState(false); // starts false (Tap to show balance)
+  const [hideBalance, setHideBalance] = useState(false);
   
-  // ড্রয়ার ও মোডাল কন্ট্রোলারস
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currencyModalOpen, setCurrencyModalOpen] = useState(false);
   const [exchangeModalOpen, setExchangeModalOpen] = useState(false);
   
   const [searchQuery, setSearchQuery] = useState('');
 
-  // লাইভ ক্রিপ্টো রেট ডেটা
   const [marketTokens, setMarketTokens] = useState({
-    USDT: { price: 1.00, change: 0.12 },
-    BTC: { price: 92450.00, change: 1.45 },
-    TON: { price: 7.24, change: -0.12 },
-    ETH: { price: 3120.75, change: -0.52 }
+    USDT: { price: 1.00, change: 0.12, icon: '$', color: '#10B981', name: 'Tether US' },
+    BTC: { price: 92450.00, change: 1.45, icon: 'B', color: '#F0B90B', name: 'Bitcoin' },
+    TON: { price: 7.24, change: -0.12, icon: 'T', color: '#0098EA', name: 'Toncoin' },
+    ETH: { price: 3120.75, change: -0.52, icon: 'E', color: '#6366F1', name: 'Ethereum' }
   });
 
-  // সোয়াপ এপিআই ক্যালকুলেটর স্টেইট
   const [swapFrom, setSwapFrom] = useState('bsc-usdt');
   const [swapTo, setSwapTo] = useState('xrocket-ton');
   const [swapAmountFrom, setSwapAmountFrom] = useState<number>(100);
 
-  // ট্রানজেকশন ব্রডকাস্ট এনিমেশন সিমুলেশন
   const [txModalOpen, setTxModalOpen] = useState(false);
   const [txText, setTxText] = useState('');
   const [txCompleted, setTxCompleted] = useState(false);
 
-  // ২. লাইভ ক্রিপ্টো রেট আপডেটার লুপ
   useEffect(() => {
     const interval = setInterval(() => {
       setMarketTokens((prev) => {
@@ -52,7 +46,6 @@ export default function BroxpayWallet() {
     return () => clearInterval(interval);
   }, []);
 
-  // ৩. ফ্লাগ জেনারেটর
   const getFlag = (code: string) => {
     const overrides: Record<string, string> = {
       'EUR': 'EU', 'GBP': 'GB', 'USD': 'US'
@@ -115,7 +108,7 @@ export default function BroxpayWallet() {
 
   return (
     <div className="flex justify-center items-center min-h-screen py-4 w-full">
-      <div className="w-full max-w-md md:max-w-5xl bg-[#0f1624] h-[100dvh] md:h-[780px] flex flex-col justify-between relative shadow-2xl overflow-hidden md:rounded-[32px] md:border md:border-slate-800 transition-colors duration-300">
+      <div className="w-full max-w-md md:max-w-5xl bg-white dark:bg-[#0f1624] h-[100dvh] md:h-[780px] flex flex-col justify-between relative shadow-2xl overflow-hidden md:rounded-[32px] md:border md:border-gray-100 dark:md:border-slate-800 transition-colors duration-300">
         
         {/* Scrollable Content Area */}
         <div className="overflow-y-auto flex-1 pb-24 md:pb-6 scrollbar-none">
@@ -130,7 +123,7 @@ export default function BroxpayWallet() {
                 <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white dark:border-[#0f1624] rounded-full"></span>
               </div>
               <div>
-                <h2 className="font-extrabold text-white text-xs tracking-wider flex items-center gap-1">
+                <h2 className="font-extrabold text-gray-900 dark:text-white text-xs tracking-wider flex items-center gap-1">
                   MAC SAMUAL <i className="fa-solid fa-circle-check text-blue-500 text-[10px]" title="Verified"></i>
                 </h2>
                 <div onClick={() => setHideBalance(!hideBalance)} className="inline-flex items-center bg-gray-100 dark:bg-slate-800 text-gray-750 dark:text-slate-300 px-3 py-1 rounded-full text-[10px] font-bold mt-1 shadow-2xs cursor-pointer select-none border border-gray-200/50 dark:border-slate-700/50 transition-all hover:scale-102">
@@ -290,7 +283,21 @@ export default function BroxpayWallet() {
                   </button>
                 </div>
 
+                <div className="bg-gray-50 dark:bg-slate-950 p-4 rounded-xl border border-gray-100 dark:border-slate-850 mb-5">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-full overflow-hidden border border-slate-700">
+                      <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100" className="w-full h-full object-cover" />
+                    </div>
+                    <div>
+                        <h4 className="text-xs font-bold text-gray-800 dark:text-white">MAC SAMUAL</h4>
+                        <span className="text-[8px] bg-emerald-500/10 text-emerald-500 font-bold px-1.5 py-0.5 rounded">Verified Tier-2</span>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="space-y-4">
+                  <h5 className="text-[9px] font-bold text-gray-400 tracking-wider uppercase">System Config</h5>
+                  
                   <div onClick={() => { setSidebarOpen(false); setCurrencyModalOpen(true); }} className="flex justify-between items-center p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-950 cursor-pointer border border-transparent hover:border-gray-100 dark:hover:border-slate-800 transition-all">
                     <div className="flex items-center space-x-2">
                       <span className="text-xs font-bold text-gray-700 dark:text-slate-300">Currency</span>
@@ -384,10 +391,10 @@ export default function BroxpayWallet() {
 
                   <div className="bg-gray-50 dark:bg-slate-900 p-3.5 rounded-xl border border-gray-100 dark:border-slate-800 flex justify-between items-center">
                     <div>
-                      <label className="block text-[8px] font-bold text-gray-400 dark:text-slate-500 uppercase">To Platform</label>
+                      <label className="block text-[8px] font-bold text-gray-400 dark:text-slate-550 uppercase">To Platform</label>
                       <select value={swapTo} onChange={(e) => setSwapTo(e.target.value)} className="bg-transparent text-xs font-bold text-gray-800 dark:text-slate-200 outline-none mt-1">
                         <option value="xrocket-ton" className="dark:bg-slate-900">XRocket - TON</option>
-                        <option value="trust-usdt" className="dark:bg-slate-900">TrustWallet - USDT (TRC20)</option>
+                        <option value="trust-usdt" className="dark:bg-slate-900">TrustWallet - USDT</option>
                         <option value="bsc-usdt" className="dark:bg-slate-900">Binance - USDT</option>
                       </select>
                     </div>
