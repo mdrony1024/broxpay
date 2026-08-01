@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   StyleSheet, 
   Text, 
@@ -12,35 +12,46 @@ import {
 } from 'react-native';
 
 export default function App() {
-  // ১. স্ক্রিন রেসপন্সিভনেস কন্ট্রোলার (উইন্ডো উইড চেক)
+  // ১. ডাইনামিক ডেক্সটপ বনাম মোবাইল লেআউট কন্ট্রোলার
   const { width } = useWindowDimensions();
-  const isDesktop = width >= 768; // ৭৬৮ পিক্সেলের বেশি হলে এটি ডেক্সটপ ড্যাশবোর্ড মোডে চলে যাবে
+  const isDesktop = width >= 900; // ৯০০ পিক্সেলের বেশি হলে এটি ডেক্সটপ ড্যাশবোর্ডে রূপান্তরিত হবে
 
-  // ২. ওয়ালেট ও ব্যালেন্স স্টেইট (শুধুমাত্র ডলার $)
+  // ২. ওয়ালেট স্টেইটস (শুধুমাত্র ডলার $)
   const [currentView, setCurrentView] = useState('home'); // home, swap, history, deposit
   const [balance, setBalance] = useState(1518.68);
   const [hideBalance, setHideBalance] = useState(false);
 
-  // লাইভ ক্রিপ্টো প্রাইস ডেটা
-  const [usdtPrice, setUsdtPrice] = useState(1.00);
-  const [tonPrice, setTonPrice] = useState(7.24);
+  // লাইভ ক্রিপ্টো মার্কেট রেটস
+  const [marketTokens, setMarketTokens] = useState({
+    USDT: { name: 'Tether US', icon: '₮', price: 1.00, change: 0.12, color: '#10B981' },
+    BTC: { name: 'Bitcoin', icon: '₿', price: 92450.00, change: 1.45, color: '#F0B90B' },
+    TON: { name: 'Toncoin', icon: '💎', price: 7.24, change: -0.12, color: '#0098EA' },
+    ETH: { name: 'Ethereum', icon: 'Ξ', price: 3120.75, change: -0.52, color: '#6366F1' }
+  });
 
-  // সোয়াপ ক্যালকুলেটর স্টেইট
-  const [swapAmount, setSwapAmount] = useState('100');
+  // সোয়াপ এক্সচেঞ্জার ক্যালকুলেটর স্টেইট
   const [swapFrom, setSwapFrom] = useState('USDT');
   const [swapTo, setSwapTo] = useState('TON');
+  const [swapAmount, setSwapAmount] = useState('100');
 
-  // লাইভ রেট আপডেটার লুপ
+  // লাইভ রেট রেন্ডারিং লুপ (useEffect)
   useEffect(() => {
     const interval = setInterval(() => {
-      const pct = (Math.random() * 0.2 - 0.1) / 100;
-      setTonPrice((prev) => prev + prev * pct);
-      setBalance((prev) => prev + prev * (pct * 0.1));
+      setMarketTokens((prev) => {
+        const updated = { ...prev };
+        for (let key in updated) {
+          const pct = (Math.random() * 0.2 - 0.1) / 100;
+          updated[key as keyof typeof updated].price += updated[key as keyof typeof updated].price * pct;
+          updated[key as keyof typeof updated].change += pct * 100;
+        }
+        return updated;
+      });
+      setBalance(prev => prev + prev * ((Math.random() * 0.05 - 0.025) / 100));
     }, 3000);
     return () => clearInterval(interval);
   }, []);
 
-  // ওটিপি সোয়াপ কনফার্মেশন সিমুলেশন
+  // ওয়ান-ক্লিক সোয়াপ প্রসেসর সিমুলেশন
   const handleSwap = () => {
     const amountNum = parseFloat(swapAmount) || 0;
     if (amountNum <= 0) {
@@ -51,152 +62,203 @@ export default function App() {
     setCurrentView('history');
   };
 
+  // লাইভ এক্সচেঞ্জ ক্যালকুলেটর ভ্যালু
+  const swapResult = useMemo(() => {
+    const amountNum = parseFloat(swapAmount) || 0;
+    const fromPrice = marketTokens[swapFrom as keyof typeof marketTokens]?.price || 1.0;
+    const toPrice = marketTokens[swapTo as keyof typeof marketTokens]?.price || 1.0;
+    const value = (amountNum * fromPrice) / toPrice;
+    return `${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 })} ${swapTo}`;
+  }, [swapAmount, swapFrom, swapTo, marketTokens]);
+
   return (
     <SafeAreaView style={styles.container}>
       
-      {/* মেইন কন্টেইনার (ডেক্সটপে এটি দুই কলাম বা স্প্লিট লেআউটে রূপান্তরিত হবে) */}
-      <View style={[styles.mainContainer, isDesktop && styles.desktopLayout]}>
+      {/* App Main Shell */}
+      <View style={[styles.shell, isDesktop && styles.desktopShell]}>
         
-        {/* ক. ডেক্সটপ সাইডবার (শুধুমাত্র কম্পিউটারে দেখা যাবে) */}
+        {/* ক. ডেক্সটপ লাক্সারি সাইডবার (শুধুমাত্র কম্পিউটারে দেখা যাবে) */}
         {isDesktop && (
-          <View style={styles.desktopSidebar}>
-            <View class="space-y-7">
-              <View style={styles.sidebarBrand}>
-                <Text style={{ fontSize: 22 }}>⚡</Text>
-                <Text style={styles.brandText}>Broxpay Hub</Text>
+          <View style={styles.sidebar}>
+            <View>
+              {/* App Brand Logo */}
+              <View style={styles.sidebarLogo}>
+                <Text style={styles.logoIcon}>⚡</Text>
+                <Text style={styles.logoText}>Broxpay</Text>
               </View>
 
-              <View style={styles.sidebarNav}>
-                <TouchableOpacity onPress={() => setCurrentView('home')} style={[styles.sidebarLink, currentView === 'home' && styles.sidebarLinkActive]}>
-                  <Text style={[styles.sidebarLinkText, currentView === 'home' && {color: '#F0B90B'}]}>🏠 Dashboard</Text>
+              {/* Sidebar Menu Items */}
+              <View style={styles.menuList}>
+                <TouchableOpacity onPress={() => setCurrentView('home')} style={[styles.menuItem, currentView === 'home' && styles.menuItemActive]}>
+                  <Text style={[styles.menuText, currentView === 'home' && {color: '#F0B90B'}]}>🏠 Dashboard</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => setCurrentView('swap')} style={[styles.sidebarLink, currentView === 'swap' && styles.sidebarLinkActive]}>
-                  <Text style={[styles.sidebarLinkText, currentView === 'swap' && {color: '#F0B90B'}]}>🔄 Swap router</Text>
+                <TouchableOpacity onPress={() => setCurrentView('swap')} style={[styles.menuItem, currentView === 'swap' && styles.menuItemActive]}>
+                  <Text style={[styles.menuText, currentView === 'swap' && {color: '#F0B90B'}]}>🔄 Auto Exchange</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => setCurrentView('history')} style={[styles.sidebarLink, currentView === 'history' && styles.sidebarLinkActive]}>
-                  <Text style={[styles.sidebarLinkText, currentView === 'history' && {color: '#F0B90B'}]}>📊 History</Text>
+                <TouchableOpacity onPress={() => setCurrentView('history')} style={[styles.menuItem, currentView === 'history' && styles.menuItemActive]}>
+                  <Text style={[styles.menuText, currentView === 'history' && {color: '#F0B90B'}]}>📊 Ledger History</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => setCurrentView('deposit')} style={[styles.sidebarLink, currentView === 'deposit' && styles.sidebarLinkActive]}>
-                  <Text style={[styles.sidebarLinkText, currentView === 'deposit' && {color: '#F0B90B'}]}>📥 Deposit</Text>
+                <TouchableOpacity onPress={() => setCurrentView('deposit')} style={[styles.menuItem, currentView === 'deposit' && styles.menuItemActive]}>
+                  <Text style={[styles.menuText, currentView === 'deposit' && {color: '#F0B90B'}]}>📥 Deposit Funds</Text>
                 </TouchableOpacity>
               </View>
             </div>
-            
-            <Text style={styles.versionText}>Broxpay Version 1.2.0</Text>
+
+            <Text style={styles.sidebarFooter}>Broxpay v1.2.0</Text>
           </View>
         )}
 
         {/* খ. মূল ভিউপোর্ট এরিয়া */}
         <View style={styles.viewport}>
           
-          {/* ওয়ালেট হেডার (ডেক্সটপ ও মোবাইলের জন্য রেসপন্সিভ) */}
+          {/* হেডার এরিয়া (Sleek Glassmorphic look) */}
           <View style={styles.header}>
             <View style={styles.profileBox}>
-              <View style={styles.avatar}><Text style={{ fontSize: 18 }}>👤</Text></View>
+              <View style={styles.avatarBorder}>
+                <View style={styles.avatar}><Text style={{ fontSize: 16 }}>👤</Text></View>
+              </View>
               <View>
                 <Text style={styles.userName}>MAC SAMUAL</Text>
-                <TouchableOpacity onPress={() => setHideBalance(!hideBalance)} style={styles.balanceBtn}>
-                  <Text style={styles.balanceText}>
-                    🪙 {hideBalance ? 'Tap for Balance' : `$ ${balance.toFixed(2)}`}
+                <TouchableOpacity onPress={() => setHideBalance(!hideBalance)} style={styles.balanceContainer}>
+                  <Text style={styles.balanceValue}>
+                    🪙 {hideBalance ? 'Tap for Balance' : `$ ${balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                   </Text>
                 </TouchableOpacity>
               </View>
             </View>
-            <Text style={styles.liveBadge}>🟢 Live</Text>
+            <View style={styles.liveIndicator}>
+              <View style={styles.liveDot}></View>
+              <Text style={styles.liveText}>Live Router</Text>
+            </View>
           </View>
 
-          {/* স্ক্রিন রেন্ডারিং এরিয়া */}
-          <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          {/* স্ক্রিন রেন্ডারার (ডেক্সটপে ৩টি কলামে বিভক্ত হবে) */}
+          <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
             <View style={isDesktop ? styles.desktopGrid : styles.mobileGrid}>
               
-              {/* বাম পাশের মূল প্যানেল (ব্যালেন্স, অ্যাকশন এবং সোয়াপ) */}
-              <View style={isDesktop ? {flex: 7} : {width: '100%'}}>
+              {/* বাম পাশের মূল প্যানেল (মডিউলসমূহ) */}
+              <View style={isDesktop ? {flex: 7.2} : {width: '100%'}}>
                 
+                {/* ১. হোম স্ক্রিন ভিউ */}
                 {currentView === 'home' && (
-                  <View style={styles.viewPane}>
-                    {/* একটিভ টানেল ব্যানার */}
-                    <View style={styles.tunnelBanner}>
-                      <Text style={styles.bannerEmoji}>⚡</Text>
-                      <View style={{ flex: 1, marginLeft: 12 }}>
-                        <Text style={styles.bannerTag}>Router Active</Text>
+                  <View class="space-y-6">
+                    {/* একটিভ টানেল নিয়ন ব্যানার */}
+                    <View style={styles.neonBanner}>
+                      <View style={styles.bannerGlowIcon}><Text style={{fontSize: 18}}>⚡</Text></View>
+                      <View style={{ flex: 1, marginLeft: 14 }}>
+                        <Text style={styles.bannerTag}>Secure Tunnel</Text>
                         <Text style={styles.bannerTitle}>Binance ⇄ XRocket Auto Channel</Text>
                       </View>
                     </View>
 
-                    {/* ৪টি অ্যাকশন বাটন */}
-                    <View style={styles.actionGrid}>
-                      <TouchableOpacity onPress={() => setCurrentView('deposit')} style={styles.actionItem}>
-                        <View style={styles.actionIconBox}><Text style={{fontSize: 18}}>📥</Text></View>
+                    {/* ৪টি গ্লাস অ্যাকশন বাটন */}
+                    <View style={styles.actionCard}>
+                      <TouchableOpacity onPress={() => setCurrentView('deposit')} style={styles.actionBtn}>
+                        <View style={styles.actionIcon}><Text style={{fontSize: 16}}>📥</Text></View>
                         <Text style={styles.actionLabel}>Deposit</Text>
                       </TouchableOpacity>
-                      <TouchableOpacity onPress={() => setCurrentView('swap')} style={styles.actionItem}>
-                        <View style={[styles.actionIconBox, {borderColor: '#F0B90B'}]}><Text style={{fontSize: 18}}>🔄</Text></View>
+                      <TouchableOpacity onPress={() => setCurrentView('swap')} style={styles.actionBtn}>
+                        <View style={[styles.actionIcon, {borderColor: '#F0B90B'}]}><Text style={{fontSize: 16}}>🔄</Text></View>
                         <Text style={styles.actionLabel}>Swap</Text>
                       </TouchableOpacity>
-                      <TouchableOpacity onPress={() => alert("Please upload NID on Broxpay Web to verify L2.")} style={styles.actionItem}>
-                        <View style={styles.actionIconBox}><Text style={{fontSize: 18}}>🛡️</Text></View>
+                      <TouchableOpacity onPress={() => alert("Verify NID on Broxpay Web to activate L2.")} style={styles.actionBtn}>
+                        <View style={styles.actionIcon}><Text style={{fontSize: 16}}>🛡️</Text></View>
                         <Text style={styles.actionLabel}>KYC</Text>
                       </TouchableOpacity>
-                      <TouchableOpacity onPress={() => setCurrentView('history')} style={styles.actionItem}>
-                        <View style={styles.actionIconBox}><Text style={{fontSize: 18}}>📊</Text></View>
+                      <TouchableOpacity onPress={() => setCurrentView('history')} style={styles.actionBtn}>
+                        <View style={styles.actionIcon}><Text style={{fontSize: 16}}>📊</Text></View>
                         <Text style={styles.actionLabel}>History</Text>
                       </TouchableOpacity>
                     </View>
+
+                    {/* প্রোমোশনাল অফার ব্যানার */}
+                    <View style={styles.promoCard}>
+                      <View class="space-y-2">
+                        <Text style={styles.promoTag}>Featured Deal</Text>
+                        <Text style={styles.promoTitle}>Earn Up to 10% Cash Reward on first TON Swap</p>
+                      </View>
+                      <TouchableOpacity onPress={() => setCurrentView('swap')} style={styles.promoBtn}>
+                        <Text style={styles.promoBtnText}>Trade</Text>
+                      </TouchableOpacity>
+                    </View>
                   </View>
                 )}
 
+                {/* ২. সোয়াপ উইন্ডো */}
                 {currentView === 'swap' && (
-                  <View style={styles.viewPane}>
-                    <Text style={styles.viewTitle}>🔄 Broxpay Auto-Router</Text>
-                    <View style={styles.swapCard}>
-                      <View style={styles.swapInputRow}>
+                  <View class="space-y-4">
+                    <Text style={styles.viewTitle}>🔄 Instant Auto-Router</Text>
+                    
+                    <View style={styles.swapBox}>
+                      <View style={styles.inputContainer}>
                         <View>
-                          <Text style={styles.inputLabel}>From Platform</Text>
-                          <Text style={styles.tokenText}>{swapFrom}</Text>
+                          <Text style={styles.fieldLabel}>From Platform</Text>
+                          <select value={swapFrom} onChange={(e) => setSwapFrom(e.target.value)} style={styles.selectStyle}>
+                            <option value="USDT">Binance (USDT)</option>
+                            <option value="TON">XRocket (TON)</option>
+                            <option value="BTC">TrustWallet (BTC)</option>
+                          </select>
                         </View>
-                        <TextInput value={swapAmount} onChangeText={setSwapAmount} keyboardType="numeric" style={styles.textInput} />
+                        <TextInput 
+                          value={swapAmount}
+                          onChangeText={setSwapAmount}
+                          keyboardType="numeric"
+                          style={styles.amountInput}
+                        />
                       </View>
-                      <View style={styles.swapArrow}><Text style={{color: '#000'}}>⬇</Text></View>
-                      <View style={styles.swapInputRow}>
+
+                      {/* অ্যারো আইকন */}
+                      <View style={styles.routingArrow}>
+                        <Text style={{fontSize: 12}}>⬇</Text>
+                      </View>
+
+                      <View style={styles.inputContainer}>
                         <View>
-                          <Text style={styles.inputLabel}>To Platform</Text>
-                          <Text style={styles.tokenText}>{swapTo}</Text>
+                          <Text style={styles.fieldLabel}>To Platform</Text>
+                          <select value={swapTo} onChange={(e) => setSwapTo(e.target.value)} style={styles.selectStyle}>
+                            <option value="TON">XRocket (TON)</option>
+                            <option value="USDT">Binance (USDT)</option>
+                            <option value="BTC">TrustWallet (BTC)</option>
+                          </select>
                         </View>
-                        <Text style={styles.outputValue}>
-                          {((parseFloat(swapAmount) || 0) * (swapFrom === 'USDT' ? (1/tonPrice) : tonPrice)).toFixed(3)} {swapTo}
-                        </Text>
+                        <Text style={styles.resultValue}>{swapResult}</Text>
                       </View>
-                      <TouchableOpacity onPress={handleSwap} style={styles.primaryButton}>
-                        <Text style={styles.buttonText}>Confirm Auto Exchange</Text>
+
+                      <TouchableOpacity onPress={handleSwap} style={styles.swapConfirmBtn}>
+                        <Text style={styles.swapBtnText}>Execute Auto Exchange</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
                 )}
 
+                {/* ৩. ডিপোজিট উইন্ডো */}
                 {currentView === 'deposit' && (
-                  <View style={styles.viewPane}>
+                  <View class="space-y-4">
                     <Text style={styles.viewTitle}>📥 Deposit Assets</Text>
-                    <View style={styles.swapCard}>
-                      <View style={styles.qrMock}><Text style={{fontSize: 48}}>🏁</Text></View>
-                      <Text style={styles.inputLabel}>Your Deposit Wallet Address</Text>
-                      <Text style={styles.monoAddress}>EQC384NfL829Df101vK02Mv9fL...</Text>
-                      <TouchableOpacity onPress={() => alert("Address copied to clipboard.")} style={styles.secondaryButton}>
-                        <Text style={{color: '#fff', fontWeight: 'bold'}}>Copy Address</Text>
+                    <View style={styles.swapBox}>
+                      <View style={styles.qrContainer}>
+                        <Text style={{fontSize: 48}}>🏁</Text>
+                      </View>
+                      <Text style={styles.fieldLabel}>Your Deposit Address</Text>
+                      <Text style={styles.addressText}>EQC384NfL829Df101vK02Mv9fL...</Text>
+                      <TouchableOpacity onPress={() => alert("Copied to clipboard.")} style={styles.copyBtn}>
+                        <Text style={{color: '#fff', fontWeight: 'bold', fontSize: 11}}>Copy Address</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
                 )}
 
+                {/* ৪. হিস্ট্রি উইন্ডো */}
                 {currentView === 'history' && (
-                  <View style={styles.viewPane}>
-                    <Text style={styles.viewTitle}>📊 Transaction Ledger</Text>
-                    <View style={styles.swapCard}>
+                  <View class="space-y-4">
+                    <Text style={styles.viewTitle}>📊 Transaction History</Text>
+                    <View style={styles.swapBox}>
                       <View style={styles.historyItem}>
                         <View>
-                          <Text style={{fontWeight: 'bold', color: '#fff', fontSize: 13}}>USDT ⇄ TON Swap</Text>
-                          <Text style={{color: '#555', fontSize: 10}}>Binance to XRocket Channel</Text>
+                          <Text style={styles.historyTitle}>USDT ⇄ TON Swap</Text>
+                          <Text style={styles.historySub}>Binance ⇄ XRocket Channel</Text>
                         </View>
-                        <Text style={{color: '#10B981', fontWeight: 'bold', fontSize: 12}}>Completed</Text>
+                        <Text style={styles.historyStatus}>✓ Completed</Text>
                       </View>
                     </View>
                   </View>
@@ -204,38 +266,49 @@ export default function App() {
 
               </View>
 
-              {/* ডান পাশের প্যানেল (ডেক্সটপে এটি সাইড-বাই-সাইড দেখাবে, মোবাইলে নিচে নামবে) */}
-              <View style={isDesktop ? {flex: 5, marginLeft: 24} : {width: '100%', marginTop: 20}}>
+              {/* ডান পাশের প্যানেল (লাইভ মার্কেট ট্রেন্ডস - ডেক্সটপে ডানে এবং মোবাইলে নিচে দেখাবে) */}
+              <View style={isDesktop ? {flex: 4.8, marginLeft: 26} : {width: '100%', marginTop: 24}}>
                 <Text style={styles.sectionTitle}>Market Trends</Text>
-                <View style={styles.marketList}>
-                  <View style={styles.marketItem}>
-                    <Text style={{color: '#94a3b8', fontSize: 12}}>🪙 USDT (Tether)</Text>
-                    <Text style={styles.marketPrice}>${usdtPrice.toFixed(2)}</Text>
-                  </View>
-                  <View style={styles.marketItem}>
-                    <Text style={{color: '#94a3b8', fontSize: 12}}>💎 TON (Toncoin)</Text>
-                    <Text style={[styles.marketPrice, {color: '#10B981'}]}>${tonPrice.toFixed(2)}</Text>
-                  </View>
+                <View style={styles.marketCard}>
+                  {Object.entries(marketTokens).map(([key, token]) => (
+                    <View key={key} style={styles.marketItem}>
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <View style={[styles.marketIconBox, {borderColor: token.color + '30'}]}>
+                          <Text style={{color: token.color, fontSize: 13}}>{token.icon}</Text>
+                        </View>
+                        <View style={{marginLeft: 12}}>
+                          <Text style={styles.tokenName}>{key}</Text>
+                          <Text style={styles.tokenSub}>{token.name}</Text>
+                        </View>
+                      </div>
+                      <View style={{textAlign: 'right'}}>
+                        <Text style={styles.tokenPrice}>${token.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+                        <Text style={[styles.tokenChange, {color: token.change >= 0 ? '#10B981' : '#F43F5E'}]}>
+                          {token.change >= 0 ? '+' : ''}{token.change.toFixed(2)}%
+                        </Text>
+                      </View>
+                    </View>
+                  ))}
                 </View>
               </View>
 
             </View>
           </ScrollView>
 
-          {/* ৩. বটম নেভিগেশন ট্যাব বার (কম্পিউটারে এটি স্বয়ংক্রিয়ভাবে হাইড হয়ে যাবে) */}
+          {/* গ. বটম নেভিগেশন ট্যাব বার (ডেক্সটপে অটোমেটিক্যালি হাইড হয়ে যাবে) */}
           {!isDesktop && (
             <View style={styles.navBar}>
               <TouchableOpacity onPress={() => setCurrentView('home')} style={styles.navItem}>
-                <Text style={{ fontSize: 18, color: currentView === 'home' ? '#F0B90B' : '#555' }}>🏠</Text>
-                <Text style={[styles.navLabel, { color: currentView === 'home' ? '#F0B90B' : '#555' }]}>Home</Text>
+                <Text style={{ fontSize: 18, color: currentView === 'home' ? '#F0B90B' : '#475569' }}>🏠</Text>
+                <Text style={[styles.navLabel, { color: currentView === 'home' ? '#F0B90B' : '#475569' }]}>Home</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => setCurrentView('swap')} style={styles.navItem}>
-                <Text style={{ fontSize: 18, color: currentView === 'swap' ? '#F0B90B' : '#555' }}>🔄</Text>
-                <Text style={[styles.navLabel, { color: currentView === 'swap' ? '#F0B90B' : '#555' }]}>Swap</Text>
+                <Text style={{ fontSize: 18, color: currentView === 'swap' ? '#F0B90B' : '#475569' }}>🔄</Text>
+                <Text style={[styles.navLabel, { color: currentView === 'swap' ? '#F0B90B' : '#475569' }]}>Swap</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => setCurrentView('history')} style={styles.navItem}>
-                <Text style={{ fontSize: 18, color: currentView === 'history' ? '#F0B90B' : '#555' }}>📊</Text>
-                <Text style={[styles.navLabel, { color: currentView === 'history' ? '#F0B90B' : '#555' }]}>History</Text>
+                <Text style={{ fontSize: 18, color: currentView === 'history' ? '#F0B90B' : '#475569' }}>📊</Text>
+                <Text style={[styles.navLabel, { color: currentView === 'history' ? '#F0B90B' : '#475569' }]}>History</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -247,6 +320,7 @@ export default function App() {
   );
 }
 
+// ৫. প্রিমিয়াম ডার্ক নিয়ন স্টাইলশীট (StyleSheet)
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -254,64 +328,70 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  mainContainer: {
+  shell: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#0f1624',
+    backgroundColor: '#070b19',
   },
-  desktopLayout: {
+  desktopShell: {
     flexDirection: 'row',
   },
-  desktopSidebar: {
-    width: 260,
-    backgroundColor: '#080d1a',
+  sidebar: {
+    width: 250,
+    backgroundColor: '#030712',
     borderRightWidth: 1,
     borderRightColor: '#1e293b',
     padding: 24,
     justifyContent: 'space-between',
   },
-  sidebarBrand: {
+  sidebarLogo: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 30,
+    columnGap: 10,
   },
-  brandText: {
+  logoIcon: {
+    textShadowColor: 'rgba(240, 185, 11, 0.4)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 10,
+  },
+  logoText: {
     color: '#F0B90B',
-    fontWeight: 'bold',
+    fontWeight: '800',
     fontSize: 14,
-    marginLeft: 10,
     textTransform: 'uppercase',
-    letterSpacing: 1,
+    letterSpacing: 1.5,
   },
-  sidebarNav: {
-    rowGap: 10,
+  menuList: {
+    rowGap: 8,
   },
-  sidebarLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  menuItem: {
     padding: 12,
     borderRadius: 12,
   },
-  sidebarLinkActive: {
-    backgroundColor: 'rgba(240, 185, 11, 0.1)',
+  menuItemActive: {
+    backgroundColor: 'rgba(240, 185, 11, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(240, 185, 11, 0.15)',
   },
-  sidebarLinkText: {
-    color: '#94a3b8',
-    fontWeight: 'bold',
-    fontSize: 12,
+  menuText: {
+    color: '#64748b',
+    fontWeight: '700',
+    fontSize: 11,
+    textTransform: 'uppercase',
   },
-  versionText: {
+  sidebarFooter: {
     textAlign: 'center',
     fontSize: 8,
-    color: '#475569',
+    color: '#334155',
     textTransform: 'uppercase',
+    fontWeight: 'bold',
   },
   viewport: {
     flex: 1,
-    flexDirection: 'col',
+    height: '100%',
     justifyContent: 'between',
     position: 'relative',
-    height: '100%',
   },
   header: {
     flexDirection: 'row',
@@ -327,38 +407,60 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  avatarBorder: {
+    padding: 2,
+    borderRadius: 22,
+    backgroundColor: '#070b19',
+    borderWidth: 1.5,
+    borderColor: '#F0B90B',
+    marginRight: 12,
+  },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: '#1e293b',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
   },
   userName: {
     color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 12,
+    fontWeight: '800',
+    fontSize: 11,
+    letterSpacing: 0.5,
   },
-  balanceBtn: {
-    marginTop: 4,
+  balanceContainer: {
+    marginTop: 2,
   },
-  balanceText: {
+  balanceValue: {
     color: '#F0B90B',
     fontSize: 10,
     fontWeight: 'bold',
   },
-  liveBadge: {
-    fontSize: 10,
-    color: '#10B981',
-    fontWeight: 'bold',
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+  liveIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(16, 185, 129, 0.08)',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.15)',
   },
-  scrollContent: {
+  liveDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#10B981',
+    marginRight: 6,
+  },
+  liveText: {
+    fontSize: 9,
+    color: '#10B981',
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+  },
+  scrollContainer: {
     flex: 1,
     paddingHorizontal: 20,
   },
@@ -371,30 +473,37 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
   },
   viewPane: {
-    paddingVertical: 5,
+    rowGap: 15,
   },
   viewTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
+    fontSize: 12,
+    fontWeight: '800',
     color: '#fff',
-    marginBottom: 15,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 10,
   },
-  tunnelBanner: {
+  neonBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(240, 185, 11, 0.05)',
+    backgroundColor: 'rgba(0, 152, 234, 0.05)',
     borderWidth: 1,
-    borderColor: 'rgba(240, 185, 11, 0.15)',
-    borderRadius: 16,
-    padding: 12,
+    borderColor: 'rgba(0, 152, 234, 0.15)',
+    borderRadius: 20,
+    padding: 14,
   },
-  bannerEmoji: {
-    fontSize: 20,
+  bannerGlowIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: 'rgba(0, 152, 234, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   bannerTag: {
     fontSize: 8,
-    color: '#F0B90B',
-    fontWeight: 'bold',
+    color: '#0098EA',
+    fontWeight: '800',
     textTransform: 'uppercase',
   },
   bannerTitle: {
@@ -402,48 +511,80 @@ const styles = StyleSheet.create({
     color: '#94a3b8',
     fontWeight: 'bold',
   },
-  actionGrid: {
+  actionCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    backgroundColor: 'rgba(255, 255, 255, 0.01)',
     padding: 15,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: '#1e293b',
-    marginTop: 15,
   },
-  actionItem: {
+  actionBtn: {
     alignItems: 'center',
   },
-  actionIconBox: {
+  actionIcon: {
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: '#0f172a',
+    backgroundColor: '#070b19',
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: '#1e293b',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 6,
   },
   actionLabel: {
-    color: '#94a3b8',
-    fontSize: 10,
-    fontWeight: 'bold',
+    color: '#64748b',
+    fontSize: 9,
+    fontWeight: '700',
+    textTransform: 'uppercase',
   },
-  section: {
-    marginTop: 20,
+  promoCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#111726',
+    borderWidth: 1,
+    borderColor: '#1e293b',
+    borderRadius: 20,
+    padding: 15,
+  },
+  promoTag: {
+    fontSize: 8,
+    color: '#10B981',
+    fontWeight: '800',
+    textTransform: 'uppercase',
+  },
+  promoTitle: {
+    fontSize: 10,
+    color: '#fff',
+    fontWeight: 'bold',
+    maxWidth: 180,
+  },
+  promoBtn: {
+    backgroundColor: '#10B981',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
+  },
+  promoBtnText: {
+    color: '#000',
+    fontWeight: 'bold',
+    fontSize: 10,
+    textTransform: 'uppercase',
   },
   sectionTitle: {
     fontSize: 10,
-    fontWeight: 'bold',
-    color: '#64748b',
+    fontWeight: '800',
+    color: '#475569',
     textTransform: 'uppercase',
-    marginBottom: 8,
+    letterSpacing: 0.5,
+    marginBottom: 10,
   },
-  marketList: {
+  marketCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.01)',
-    borderRadius: 16,
+    borderRadius: 24,
     borderWidth: 1,
     borderColor: '#1e293b',
     padding: 15,
@@ -451,48 +592,80 @@ const styles = StyleSheet.create({
   marketItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 8,
+    alignItems: 'center',
+    paddingVertical: 10,
   },
-  marketPrice: {
+  marketIconBox: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255,255,255,0.02)',
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tokenName: {
     color: '#fff',
-    fontWeight: 'bold',
+    fontWeight: '700',
     fontSize: 11,
   },
-  swapCard: {
+  tokenSub: {
+    color: '#475569',
+    fontSize: 9,
+    textTransform: 'uppercase',
+    fontWeight: 'bold',
+  },
+  tokenPrice: {
+    color: '#fff',
+    fontWeight: '800',
+    fontSize: 11,
+  },
+  tokenChange: {
+    fontSize: 9,
+    fontWeight: 'bold',
+    marginTop: 2,
+  },
+  swapBox: {
     backgroundColor: '#0F1624',
     padding: 20,
     borderRadius: 24,
     borderWidth: 1,
     borderColor: '#1e293b',
   },
-  swapInputRow: {
+  inputContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: '#020408',
     padding: 12,
     borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.02)',
   },
-  inputLabel: {
+  fieldLabel: {
     fontSize: 8,
-    color: '#64748b',
+    color: '#475569',
     textTransform: 'uppercase',
     fontWeight: 'bold',
   },
-  tokenText: {
+  selectStyle: {
+    background: 'none',
+    border: 'none',
     color: '#fff',
-    fontWeight: 'bold',
     fontSize: 11,
+    fontWeight: 'bold',
     marginTop: 4,
+    outline: 'none',
+    cursor: 'pointer',
   },
-  textInput: {
+  amountInput: {
     width: 100,
     color: '#fff',
     fontSize: 14,
     fontWeight: 'bold',
     textAlign: 'right',
   },
-  swapArrow: {
+  routingArrow: {
     width: 28,
     height: 28,
     backgroundColor: '#F0B90B',
@@ -502,25 +675,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginVertical: 10,
   },
-  outputValue: {
+  resultValue: {
     color: '#F0B90B',
     fontSize: 14,
     fontWeight: 'bold',
   },
-  primaryButton: {
+  swapConfirmBtn: {
     backgroundColor: '#F0B90B',
     paddingVertical: 14,
     borderRadius: 16,
     alignItems: 'center',
     marginTop: 15,
   },
-  buttonText: {
+  swapBtnText: {
     color: '#000',
-    fontWeight: 'bold',
-    fontSize: 11,
+    fontWeight: '800',
+    fontSize: 10,
     textTransform: 'uppercase',
   },
-  qrMock: {
+  qrContainer: {
     width: 120,
     height: 120,
     backgroundColor: '#fff',
@@ -530,9 +703,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 15,
   },
-  monoAddress: {
+  addressText: {
     color: '#94a3b8',
-    fontSize: 10,
+    fontSize: 9,
     fontFamily: 'monospace',
     textAlign: 'center',
     backgroundColor: '#020408',
@@ -540,8 +713,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginTop: 6,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.02)',
   },
-  secondaryButton: {
+  copyBtn: {
     backgroundColor: 'rgba(255,255,255,0.05)',
     paddingVertical: 10,
     borderRadius: 12,
@@ -552,13 +727,27 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  historyTitle: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 12,
+  },
+  historySub: {
+    color: '#475569',
+    fontSize: 9,
+  },
+  historyStatus: {
+    color: '#10B981',
+    fontWeight: '800',
+    fontSize: 11,
+  },
   navBar: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
     height: 65,
-    backgroundColor: '#070b19',
+    backgroundColor: '#030712',
     borderTopWidth: 1,
     borderTopColor: '#1e293b',
     flexDirection: 'row',
@@ -571,7 +760,7 @@ const styles = StyleSheet.create({
   },
   navLabel: {
     fontSize: 8,
-    fontWeight: 'bold',
+    fontWeight: '850',
     marginTop: 4,
   }
 });
